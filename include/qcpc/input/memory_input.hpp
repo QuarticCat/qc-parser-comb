@@ -16,16 +16,16 @@ namespace qcpc {
 
 struct MemoryInput {
     MemoryInput(const char* begin, const char* end) noexcept
-        : _begin(begin), _end(end), _line(0), _column(0) {}
+        : _current(begin), _end(end), _line(1), _column(0) {}
 
     INPUT_DECL_HELPER(MemoryInput);
 
-    [[nodiscard]] const char* begin() const noexcept {
-        return this->_begin;
+    const char& operator*() const noexcept {
+        return *this->_current;
     }
 
-    [[nodiscard]] const char* end() const noexcept {
-        return this->_end;
+    [[nodiscard]] bool is_eof() const noexcept {
+        return this->_current == this->_end;
     }
 
     [[nodiscard]] size_t line() const noexcept {
@@ -37,13 +37,13 @@ struct MemoryInput {
     }
 
   protected:
-    const char* _begin;
+    const char* _current;
     const char* _end;
     size_t _line;
     size_t _column;
 
     void _next() noexcept {
-        if (*this->_begin++ == '\n') {
+        if (*this->_current++ == '\n') {
             this->_line += 1;
             this->_column = 0;
         } else {
