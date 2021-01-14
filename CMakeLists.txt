@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 3.19)
 
-project(qc_parser_comb)
+project(qcpc)
 
-set(CMAKE_CXX_STANDARD 20)
+add_library(qcpc INTERFACE)
+target_include_directories(qcpc INTERFACE ${PROJECT_SOURCE_DIR}/include)
+target_compile_features(qcpc INTERFACE cxx_std_20)
 
-add_library(qc_parser_comb library.cpp library.h)
+enable_testing()
+find_package(GTest REQUIRED)
+
+add_executable(tests ${PROJECT_SOURCE_DIR}/tests/tests.cpp)
+target_link_libraries(tests GTest::GTest GTest::Main qcpc)
+gtest_discover_tests(tests)
