@@ -15,7 +15,8 @@
 namespace qcpc {
 
 struct MemoryInput {
-    MemoryInput(char* begin, char* end) noexcept: _begin(begin), _end(end), _line(0), _column(0) {}
+    MemoryInput(const char* begin, const char* end) noexcept
+        : _begin(begin), _end(end), _line(0), _column(0) {}
 
     INPUT_DECL_HELPER(MemoryInput);
 
@@ -36,8 +37,8 @@ struct MemoryInput {
     }
 
   protected:
-    char* _begin;
-    char* _end;
+    const char* _begin;
+    const char* _end;
     size_t _line;
     size_t _column;
 
