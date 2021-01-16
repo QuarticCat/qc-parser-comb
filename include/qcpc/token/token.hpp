@@ -50,7 +50,7 @@ struct Token {
         Token* _node;
     };
 
-    using TokenPtr = std::unique_ptr<Token>;
+    using Ptr = std::unique_ptr<Token>;  // save your keyboard and eyes :)
 
     Token() = default;  // TODO: do we really need this?
 
@@ -95,14 +95,14 @@ struct Token {
     }
 
     /// Push a node to the front of the children list.
-    void push_front(TokenPtr child) noexcept {
+    void push_front(Ptr child) noexcept {
         child->_next = std::move(this->_head_child);
         this->_head_child = std::move(child);
     }
 
     /// Pop a node from the front of the children list. If there is no child, return null pointer.
-    TokenPtr pop_front() noexcept {
-        TokenPtr ret = std::move(this->_head_child);
+    Ptr pop_front() noexcept {
+        Ptr ret = std::move(this->_head_child);
         this->_head_child = std::move(ret->_next);
         return ret;
     }
@@ -122,8 +122,8 @@ struct Token {
   private:
     // M-ary tree to binary tree:
     // Children are stored by a singly linked list.
-    TokenPtr _head_child = nullptr;
-    TokenPtr _next = nullptr;
+    Ptr _head_child = nullptr;
+    Ptr _next = nullptr;
     TokenPos _pos;
     // TODO: store rule
 };
