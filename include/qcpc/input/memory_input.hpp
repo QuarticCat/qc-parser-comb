@@ -14,7 +14,7 @@
 
 namespace qcpc {
 
-struct Position {
+struct InputPos {
     const char* current;
     size_t line;
     size_t column;
@@ -34,12 +34,12 @@ struct MemoryInput {
     }
 
     /// Return current position
-    [[nodiscard]] Position pos() const noexcept {
+    [[nodiscard]] InputPos pos() const noexcept {
         return {this->_current, this->_line, this->_column};
     }
 
     /// Jump to given position. Caller should ensure the correctness of the argument.
-    void jump(Position pos) noexcept {
+    void jump(InputPos pos) noexcept {
         this->_current = pos.current;
         this->_line = pos.line;
         this->_column = pos.column;
