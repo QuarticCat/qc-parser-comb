@@ -34,7 +34,7 @@ struct AstNode {
             return this->_node != rhs._node;
         }
 
-        AstNode& operator*() const noexcept {
+        [[nodiscard]] AstNode& operator*() const noexcept {
             return *this->_node;
         }
 

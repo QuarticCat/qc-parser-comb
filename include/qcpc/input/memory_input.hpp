@@ -25,7 +25,7 @@ struct MemoryInput {
 
     INPUT_DECL_HELPER(MemoryInput);
 
-    const char& operator*() const noexcept {
+    [[nodiscard]] const char& operator*() const noexcept {
         return *this->_current;
     }
 
