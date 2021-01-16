@@ -9,6 +9,7 @@ target_compile_features(qcpc INTERFACE cxx_std_20)
 enable_testing()
 find_package(GTest REQUIRED)
 
-add_executable(tests ${PROJECT_SOURCE_DIR}/tests/tests.cpp)
+file(GLOB_RECURSE test_sources ${PROJECT_SOURCE_DIR}/tests/*.cpp)
+add_executable(tests ${test_sources})
 target_link_libraries(tests GTest::GTest GTest::Main qcpc)
 gtest_discover_tests(tests)
