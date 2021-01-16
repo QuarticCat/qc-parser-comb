@@ -5,7 +5,7 @@
 
 TEST(TokenTest, IterToken) {
     const char cstr[] = "Handsome QC";
-    qcpc::TokenPos pos{cstr, (&cstr)[1] - 1, 0, 0};
+    qcpc::TokenPos pos{0, 0, cstr, (&cstr)[1] - 1};
     qcpc::Token root(pos);
     size_t count = 0;
     for (auto c: root) ASSERT_EQ(c, cstr[count++]);

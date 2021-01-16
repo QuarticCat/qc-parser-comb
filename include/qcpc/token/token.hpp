@@ -6,10 +6,10 @@
 namespace qcpc {
 
 struct TokenPos {
-    const char* begin;
-    const char* end;
     size_t line;
     size_t column;
+    const char* begin;
+    const char* end;
 };
 
 struct Token {
@@ -76,14 +76,6 @@ struct Token {
     //     return this->_pos;
     // }
 
-    [[nodiscard]] const char* begin() const noexcept {
-        return this->_pos.begin;
-    }
-
-    [[nodiscard]] const char* end() const noexcept {
-        return this->_pos.end;
-    }
-
     /// Return line number of the first character
     [[nodiscard]] size_t line() const noexcept {
         return this->_pos.line;
@@ -92,6 +84,14 @@ struct Token {
     /// Return column number of the first character
     [[nodiscard]] size_t column() const noexcept {
         return this->_pos.column;
+    }
+
+    [[nodiscard]] const char* begin() const noexcept {
+        return this->_pos.begin;
+    }
+
+    [[nodiscard]] const char* end() const noexcept {
+        return this->_pos.end;
     }
 
     /// Push a node to the front of the children list.
