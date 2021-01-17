@@ -16,4 +16,9 @@ template<typename T>
     return detail::fnv_hash(cstr.ptr, cstr.len);
 }
 
+template<typename T>
+[[nodiscard]] constexpr TypeHash type_hash(T) {
+    return type_hash<T>();
+}
+
 }  // namespace qcpc

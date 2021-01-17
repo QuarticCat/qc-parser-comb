@@ -18,7 +18,7 @@ TEST(CttiTest, TypeHash) {
     ASSERT_EQ(type_hash<char>(), type_hash<char>());
     ASSERT_EQ(type_hash<int>(), type_hash<int>());
     ASSERT_EQ(type_hash<float>(), type_hash<float>());
-    ASSERT_NE(type_hash<char>(), type_hash<int>());
-    ASSERT_NE(type_hash<int>(), type_hash<float>());
-    ASSERT_NE(type_hash<float>(), type_hash<char>());
+    ASSERT_NE(type_hash('1'), type_hash(1));
+    ASSERT_NE(type_hash(1), type_hash(1.));
+    ASSERT_NE(type_hash(1.), type_hash<char>('1'));
 }
