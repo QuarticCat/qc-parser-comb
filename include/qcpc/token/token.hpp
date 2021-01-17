@@ -76,20 +76,22 @@ struct Token {
     //     return this->_pos;
     // }
 
-    /// Return line number of the first character
+    /// Return line number of the first character.
     [[nodiscard]] size_t line() const noexcept {
         return this->_pos.line;
     }
 
-    /// Return column number of the first character
+    /// Return column number of the first character.
     [[nodiscard]] size_t column() const noexcept {
         return this->_pos.column;
     }
 
+    /// Return a pointer to the first character.
     [[nodiscard]] const char* begin() const noexcept {
         return this->_pos.begin;
     }
 
+    /// Return a pointer to the tail character.
     [[nodiscard]] const char* end() const noexcept {
         return this->_pos.end;
     }
