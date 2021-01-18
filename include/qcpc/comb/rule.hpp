@@ -14,7 +14,7 @@ namespace qcpc {
 /// ```
 /// struct RuleTemplate: RuleBase {
 ///     /// Parse and return matched token. If fail, return null pointer.
-///     template<TypeHash Rule, typename Input>
+///     template<TypeHash Rule, bool Silent, typename Input>
 ///     static Token::Ptr parse(Input& in) {}
 /// };
 /// ```
@@ -25,8 +25,8 @@ template<typename T>
 concept RuleType = std::derived_from<T, RuleBase>;
 // TODO: check interface
 
-/// This macro helps you define your own rule which has a unique `TypeHash`. All tokens it matches
-/// will has this hash tag. You should always define your rules by this macro.
+/// This macro helps you define your own rule which has an unique `TypeHash`. All tokens it matches
+/// will have this hash tag. You should always define your rules by this macro.
 ///
 /// Usage:
 /// ```
@@ -38,10 +38,10 @@ concept RuleType = std::derived_from<T, RuleBase>;
     struct GeneratedRule_##name: ::qcpc::RuleBase {                          \
         constexpr GeneratedRule_##name(InnerRule) noexcept {}                \
                                                                              \
-        template<TypeHash _, typename Input>                                 \
+        template<TypeHash Rule, bool Silent, typename Input>                 \
         static ::qcpc::Token::Ptr parse(Input& in) {                         \
             constexpr auto hash = ::qcpc::type_hash<GeneratedRule_##name>(); \
-            return InnerRule::template parse<hash>(in);                      \
+            return InnerRule::template parse<hash, Silent>(in);              \
         }                                                                    \
     };                                                                       \
     inline constexpr GeneratedRule_##name name

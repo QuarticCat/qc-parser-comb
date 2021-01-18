@@ -6,17 +6,18 @@
 TEST(TokenTest, IterToken) {
     const char cstr[] = "Handsome QC";
     qcpc::TokenPos pos{0, 0, cstr, (&cstr)[1] - 1};
-    qcpc::Token root(pos);
+    qcpc::Token root(pos, 0);
     size_t count = 0;
     for (auto c: root) ASSERT_EQ(c, cstr[count++]);
     ASSERT_EQ(count, sizeof(cstr) - 1);
 }
 
 TEST(TokenTest, PushIterPop) {
-    qcpc::Token root{};
-    root.push_front(std::make_unique<qcpc::Token>());
-    root.push_front(std::make_unique<qcpc::Token>());
-    root.push_front(std::make_unique<qcpc::Token>());
+    qcpc::TokenPos pos{0, 0, nullptr, nullptr};
+    qcpc::Token root(pos, 0);
+    root.push_front(std::make_unique<qcpc::Token>(pos, 0));
+    root.push_front(std::make_unique<qcpc::Token>(pos, 0));
+    root.push_front(std::make_unique<qcpc::Token>(pos, 0));
     size_t count = 0;
     for (auto&& node: root.iter_children()) ++count;
     ASSERT_EQ(count, 3);

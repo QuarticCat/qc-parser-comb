@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <memory>
 
+#include "../ctti/ctti.hpp"
+
 namespace qcpc {
 
 struct TokenPos {
@@ -52,9 +54,7 @@ struct Token {
 
     using Ptr = std::unique_ptr<Token>;  // save your keyboard and eyes :)
 
-    Token() = default;  // TODO: do we really need this?
-
-    explicit Token(TokenPos pos /* , rule */): _pos(pos) {}
+    explicit Token(TokenPos pos, TypeHash rule): _pos(pos), _rule(rule) {}
 
     Token(const Token&) = delete;
     Token(Token&&) = default;
@@ -96,6 +96,11 @@ struct Token {
         return this->_pos.end;
     }
 
+    /// Return type hash of its rule.
+    [[nodiscard]] TypeHash rule() const noexcept {
+        return this->_rule;
+    }
+
     /// Push a node to the front of the children list.
     void push_front(Ptr child) noexcept {
         child->_next = std::move(this->_head_child);
@@ -127,7 +132,7 @@ struct Token {
     Ptr _head_child = nullptr;
     Ptr _next = nullptr;
     TokenPos _pos;
-    // TODO: store rule
+    TypeHash _rule;
 };
 
 }  // namespace qcpc
