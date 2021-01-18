@@ -6,6 +6,7 @@
 TEST(InputTest, MemoryInput) {
     const char cstr[] = "012\n";
     qcpc::MemoryInput in(cstr, (&cstr)[1] - 1);
+    ASSERT_TRUE(in.is_bof());
     ASSERT_EQ(*++in, '1');
     ASSERT_EQ(*++in, '2');
     ASSERT_EQ(*++in, '\n');
@@ -19,6 +20,7 @@ TEST(InputTest, MemoryInput) {
 
 TEST(InputTest, StringInput) {
     qcpc::StringInput in("012\n");
+    ASSERT_TRUE(in.is_bof());
     ASSERT_EQ(*++in, '1');
     ASSERT_EQ(*++in, '2');
     ASSERT_EQ(*++in, '\n');

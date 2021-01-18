@@ -13,8 +13,9 @@ struct StringInput: MemoryInput {
         // position due to SSO.
         // The self-references (`_current` and `_end` point to the data owned by `_str`) are safe,
         // because input classes are non-copyable and non-movable.
-        this->_current = &*this->_str.begin();
+        this->_begin = &*this->_str.begin();
         this->_end = &*this->_str.end();
+        this->_current = this->_begin;
     }
 
     explicit StringInput(const char* cstr) noexcept: StringInput(std::string(cstr)) {}

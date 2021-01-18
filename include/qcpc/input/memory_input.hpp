@@ -15,18 +15,22 @@
 namespace qcpc {
 
 struct InputPos {
+    const char* current;
     size_t line;
     size_t column;
-    const char* current;
 };
 
 struct MemoryInput {
-    MemoryInput(const char* begin, const char* end) noexcept: _current(begin), _end(end) {}
+    MemoryInput(const char* begin, const char* end) noexcept: _begin(begin), _end(end) {}
 
     INPUT_DECL_HELPER(MemoryInput);
 
     [[nodiscard]] const char& operator*() const noexcept {
         return *this->_current;
+    }
+
+    [[nodiscard]] bool is_bof() const noexcept {
+        return this->_current == this->_begin;
     }
 
     [[nodiscard]] bool is_eof() const noexcept {
@@ -35,7 +39,7 @@ struct MemoryInput {
 
     /// Return current position
     [[nodiscard]] InputPos pos() const noexcept {
-        return {this->_line, this->_column, this->_current};
+        return {this->_current, this->_line, this->_column};
     }
 
     /// Jump to given position. Caller should ensure the correctness of the argument.
@@ -46,10 +50,11 @@ struct MemoryInput {
     }
 
   protected:
+    const char* _begin = nullptr;
+    const char* _end = nullptr;
+    const char* _current = _begin;
     size_t _line = 1;
     size_t _column = 0;
-    const char* _current = nullptr;
-    const char* _end = nullptr;
 
     MemoryInput() = default;
 

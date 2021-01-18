@@ -8,10 +8,10 @@
 namespace qcpc {
 
 struct TokenPos {
-    size_t line;
-    size_t column;
     const char* begin;
     const char* end;
+    size_t line;
+    size_t column;
 };
 
 struct Token {
