@@ -4,6 +4,7 @@
 
 #include "../ctti/ctti.hpp"
 #include "../token/token.hpp"
+#include "parse_ret.hpp"
 
 namespace qcpc {
 
@@ -13,9 +14,9 @@ namespace qcpc {
 /// A rule type should be like:
 /// ```
 /// struct RuleTemplate: RuleBase {
-///     /// Parse and return matched token. If fail, return null pointer.
+///     /// Parse and return matched token.
 ///     template<TypeHash Rule, bool Silent, typename Input>
-///     static Token::Ptr parse(Input& in) {}
+///     static ParseRet parse(Input& in) {}
 /// };
 /// ```
 struct RuleBase {};
@@ -38,8 +39,8 @@ concept RuleType = std::derived_from<T, RuleBase>;
     struct GeneratedRule_##name: ::qcpc::RuleBase {                          \
         constexpr GeneratedRule_##name(InnerRule) noexcept {}                \
                                                                              \
-        template<TypeHash Rule, bool Silent, typename Input>                 \
-        static ::qcpc::Token::Ptr parse(Input& in) {                         \
+        template<TypeHash /* Rule */, bool Silent, typename Input>           \
+        static ::qcpc::ParseRet parse(Input& in) {                           \
             constexpr auto hash = ::qcpc::type_hash<GeneratedRule_##name>(); \
             return InnerRule::template parse<hash, Silent>(in);              \
         }                                                                    \
