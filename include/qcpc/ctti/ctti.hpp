@@ -12,8 +12,8 @@ using TypeHash = detail::Hash;
 
 template<typename T>
 [[nodiscard]] constexpr TypeHash type_hash() {
-    auto cstr = detail::pretty_function<T>();
-    return detail::fnv_hash(cstr.ptr, cstr.len);
+    auto str = detail::pretty_function<T>();
+    return detail::fnv_hash(str.data(), str.size());
 }
 
 template<typename T>
