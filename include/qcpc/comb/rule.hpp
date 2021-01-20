@@ -14,7 +14,9 @@ namespace qcpc {
 /// A rule type should be like:
 /// ```
 /// struct RuleTemplate: RuleBase {
-///     /// Parse and return matched token.
+///     /// Parse and return matched token (or just bool). To see what should be returned, please
+///     /// refer to the doc of `ParseRet`. This function is also responsible to recover the input
+///     /// if parse fail.
 ///     template<TypeHash Rule, bool Silent, typename Input>
 ///     static ParseRet parse(Input& in) {}
 /// };

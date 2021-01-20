@@ -7,10 +7,17 @@
 
 namespace qcpc {
 
+/// Return value of rule type's `parse` member function.
+///
+/// Due to the "silent" feature, a parsing function can return two types of value. When it is
+/// silent, only return matching result (bool). Otherwise it should return a `Token::Ptr`. This
+/// class can store both of them.
 struct ParseRet {
     // This class is something like the `DiscriminantPtr` in Facebook's folly project, but weaker
     // and more specialized. The key point is, currently on x86-64 platforms, the higher 16 bits of
     // pointers are not used. We can use them as flags.
+
+    // TODO: Do we need to check the case that the higher 16 bits are all ones?
 
     /// Construct from raw ptr. Then the `ParseRet` instance has the ownership of the object it
     /// points to. (non-silent cases)
