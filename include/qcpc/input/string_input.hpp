@@ -18,9 +18,7 @@ struct StringInput: MemoryInput {
         this->_current = this->_begin;
     }
 
-    explicit StringInput(const char* cstr) noexcept: StringInput(std::string(cstr)) {}
-
-    INPUT_DECL_HELPER(StringInput);
+    QCPC_INPUT_DECL_HELPER(StringInput);
 
   protected:
     std::string _str;

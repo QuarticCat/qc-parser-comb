@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#define INPUT_DECL_HELPER(type_name)                 \
+#define QCPC_INPUT_DECL_HELPER(type_name)            \
     type_name(const type_name&) = delete;            \
     type_name(type_name&&) = delete;                 \
     type_name& operator=(const type_name&) = delete; \
@@ -23,7 +23,7 @@ struct InputPos {
 struct MemoryInput {
     MemoryInput(const char* begin, const char* end) noexcept: _begin(begin), _end(end) {}
 
-    INPUT_DECL_HELPER(MemoryInput);
+    QCPC_INPUT_DECL_HELPER(MemoryInput);
 
     [[nodiscard]] const char& operator*() const noexcept {
         return *this->_current;
@@ -35,6 +35,11 @@ struct MemoryInput {
 
     [[nodiscard]] bool is_eof() const noexcept {
         return this->_current == this->_end;
+    }
+
+    /// Return current pointer
+    [[nodiscard]] const char* current() const noexcept {
+        return this->_current;
     }
 
     /// Return current position

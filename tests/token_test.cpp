@@ -5,8 +5,11 @@
 
 TEST(TokenTest, IterToken) {
     const char cstr[] = "Handsome QC";
-    qcpc::TokenPos pos{cstr, (&cstr)[1] - 1};
-    qcpc::Token root(pos, 0);
+    qcpc::TokenPos pos{cstr, (&cstr)[1] - 1, 1, 0};
+    qcpc::Token root(pos, 114514);
+    ASSERT_EQ(root.line(), 1);
+    ASSERT_EQ(root.column(), 0);
+    ASSERT_EQ(root.rule(), 114514);
     size_t count = 0;
     for (auto c: root) ASSERT_EQ(c, cstr[count++]);
     ASSERT_EQ(count, sizeof(cstr) - 1);

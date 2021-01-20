@@ -1,8 +1,10 @@
 #pragma once
 
 #include <concepts>
+#include <cstddef>
 
 #include "../ctti/ctti.hpp"
+#include "../input/input.hpp"
 #include "../token/token.hpp"
 #include "parse_ret.hpp"
 
@@ -28,33 +30,39 @@ template<typename T>
 concept RuleType = std::derived_from<T, RuleBase>;
 // TODO: check interface
 
-/// This macro helps you define your own rule which has an unique `TypeHash`. All tokens it matches
-/// will have this hash tag. You should always define your rules by this macro.
-///
-/// Usage:
-/// ```
-/// DEFINE_RULE(my_rule) = rule_expression;
-/// // `my_rule` then can be used in parsing and in other rule expressions.
-/// ```
-#define DEFINE_RULE(name)                                                    \
-    template<::qcpc::RuleType InnerRule>                                     \
-    struct GeneratedRule_##name: ::qcpc::RuleBase {                          \
-        constexpr GeneratedRule_##name(InnerRule) noexcept {}                \
-                                                                             \
-        template<TypeHash /* Rule */, bool Silent, typename Input>           \
-        static ::qcpc::ParseRet parse(Input& in) {                           \
-            constexpr auto hash = ::qcpc::type_hash<GeneratedRule_##name>(); \
-            return InnerRule::template parse<hash, Silent>(in);              \
-        }                                                                    \
-    };                                                                       \
-    inline constexpr GeneratedRule_##name name
-
-// ############
-// Atomic Rules
-// ############
-
-// ###########
-// Combinators
-// ###########
+// // An unavailable `Str` implementation due to some limitations of C++.
+// // I leave it here in memory of my lost youth.
+// template<const char* Pattern>
+// struct Str: RuleBase {
+//     template<TypeHash Rule, bool Silent, typename Input>
+//     static ParseRet parse(Input& in) {
+//         InputPos init_pos = in.pos();
+//
+//         for (const char* i = Pattern; *i != '\0'; ++i) {
+//             if (*i == *++in) continue;
+//             in.jump(init_pos);
+//             if constexpr (Silent)
+//                 return ParseRet(false);
+//             else
+//                 return ParseRet(nullptr);
+//         }
+//
+//         if constexpr (Silent) {
+//             return ParseRet(true);
+//         } else {
+//             TokenPos last_pos{init_pos.current, in.current(), init_pos.line, init_pos.column};
+//             return ParseRet(new Token(last_pos, Rule));
+//         }
+//     }
+//
+//     // private:
+//     //   static constexpr size_t _strlen(const char* cstr) {
+//     //       size_t ret = 0;
+//     //       while (cstr[ret] != '\0') ++ret;
+//     //       return ret;
+//     //   }
+//     //
+//     //   static constexpr size_t _len = _strlen(Pattern);
+// };
 
 }  // namespace qcpc
