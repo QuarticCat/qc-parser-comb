@@ -70,9 +70,11 @@ struct Token {
 
     using Ptr = std::unique_ptr<Token>;  // save your keyboard and eyes :)
 
-    explicit Token(TokenPos pos, TypeHash rule): _pos(pos), _rule(rule) {}
+    Token(TokenPos pos, TypeHash rule): _pos(pos), _rule(rule) {}
 
-    explicit Token(InputPos pos, TypeHash rule): _pos(pos), _rule(rule) {}
+    Token(InputPos pos, TypeHash rule): _pos(pos), _rule(rule) {}
+
+    Token(InputPos start, const char* end, TypeHash rule): _pos(start, end), _rule(rule) {}
 
     Token(const Token&) = delete;
     Token(Token&&) = default;
@@ -117,6 +119,11 @@ struct Token {
     /// Return type hash of its rule.
     [[nodiscard]] TypeHash rule() const noexcept {
         return this->_rule;
+    }
+
+    /// Return whether it has children or not.
+    [[nodiscard]] bool is_empty() const noexcept {
+        return this->_head_child == nullptr;
     }
 
     /// Push a node to the front of the children list.

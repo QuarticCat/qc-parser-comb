@@ -86,4 +86,16 @@ TEST(CombTest, RuleStruct_NotAt) {
     ASSERT_TRUE(QCPC_PARSE(notat_rule, StringInput("qcp")));
 }
 
+// TODO: need a better test case, e.g. silent seq
+QCPC_DEFINE_RULE(silent_rule) = ~str_rule;
+
+TEST(CombTest, RuleStruct_Silent) {
+    StringInput in("qcpc");
+    Token::Ptr root = QCPC_PARSE(silent_rule, in);
+    ASSERT_EQ(in.current(), in.end());
+    ASSERT_TRUE(root->is_empty());
+
+    ASSERT_FALSE(QCPC_PARSE(silent_rule, StringInput("qcp")));
+}
+
 }  // namespace rule_test

@@ -71,7 +71,7 @@ template<char... Cs>
 struct Str: RuleBase {
     template<TypeHash Rule, bool Silent, typename Input>
     static ParseRet parse(Input& in) {
-        InputPos init_pos = in.pos();
+        InputPos pos = in.pos();
 
         if (in.size() >= sizeof...(Cs)) {
             for (char c: {Cs...}) {
@@ -85,8 +85,7 @@ struct Str: RuleBase {
         if constexpr (Silent) {
             return ParseRet(true);
         } else {
-            TokenPos last_pos(init_pos, in.current());
-            return ParseRet(new Token(last_pos, Rule));
+            return ParseRet(new Token(pos, in.current(), Rule));
         }
     }
 };
@@ -134,6 +133,26 @@ struct NotAt: RuleBase {
 template<RuleType R>
 constexpr NotAt<R> operator-(R) {
     return NotAt<R>{};
+}
+
+/// Match (and consume) silently. The token it returns has no child.
+template<RuleType R>
+struct Silent: RuleBase {
+    template<TypeHash Rule, bool Silent, typename Input>
+    static ParseRet parse(Input& in) {
+        if constexpr (Silent) {
+            return R::template parse<0, Silent>(in);
+        } else {
+            InputPos pos = in.pos();
+            ParseRet ret = R::template parse<0, Silent>(in);
+            return ret.success() ? ParseRet(new Token(pos, in.current(), Rule)) : ParseRet(nullptr);
+        }
+    }
+};
+
+template<RuleType R>
+constexpr Silent<R> operator~(R) {
+    return Silent<R>{};
 }
 
 }  // namespace qcpc
