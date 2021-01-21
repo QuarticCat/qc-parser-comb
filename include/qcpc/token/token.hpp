@@ -72,6 +72,8 @@ struct Token {
 
     explicit Token(TokenPos pos, TypeHash rule): _pos(pos), _rule(rule) {}
 
+    explicit Token(InputPos pos, TypeHash rule): _pos(pos), _rule(rule) {}
+
     Token(const Token&) = delete;
     Token(Token&&) = default;
     Token& operator=(const Token&) = delete;

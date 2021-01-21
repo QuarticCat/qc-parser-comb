@@ -63,4 +63,18 @@ TEST(CombTest, RuleStruct_Str) {
     ASSERT_FALSE(QCPC_PARSE(str_rule, StringInput("qcp")));
 }
 
+QCPC_DEFINE_RULE(at_rule) = +str_rule;
+
+TEST(CombTest, RuleStruct_At) {
+    ASSERT_TRUE(QCPC_PARSE(at_rule, StringInput("qcpc")));
+    ASSERT_FALSE(QCPC_PARSE(at_rule, StringInput("qcp")));
+}
+
+QCPC_DEFINE_RULE(notat_rule) = -str_rule;
+
+TEST(CombTest, RuleStruct_NotAt) {
+    ASSERT_FALSE(QCPC_PARSE(notat_rule, StringInput("qcpc")));
+    ASSERT_TRUE(QCPC_PARSE(notat_rule, StringInput("qcp")));
+}
+
 }  // namespace rule_test

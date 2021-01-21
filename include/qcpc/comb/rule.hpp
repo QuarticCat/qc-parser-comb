@@ -45,7 +45,7 @@ struct Bof: RuleBase {
         if constexpr (Silent) {
             return ParseRet(in.is_bof());
         } else {
-            return in.is_bof() ? ParseRet(new Token(TokenPos(in.pos()), Rule)) : ParseRet(nullptr);
+            return in.is_bof() ? ParseRet(new Token(in.pos(), Rule)) : ParseRet(nullptr);
         }
     }
 };
@@ -59,7 +59,7 @@ struct Eof: RuleBase {
         if constexpr (Silent) {
             return ParseRet(in.is_eof());
         } else {
-            return in.is_eof() ? ParseRet(new Token(TokenPos(in.pos()), Rule)) : ParseRet(nullptr);
+            return in.is_eof() ? ParseRet(new Token(in.pos(), Rule)) : ParseRet(nullptr);
         }
     }
 };
@@ -93,5 +93,47 @@ struct Str: RuleBase {
 
 template<char... Cs>
 inline constexpr Str<Cs...> str{};
+
+/// Match given rule but consume nothing.
+template<RuleType R>
+struct At: RuleBase {
+    template<TypeHash Rule, bool Silent, typename Input>
+    static ParseRet parse(Input& in) {
+        InputPos pos = in.pos();
+        ParseRet ret = R::template parse<0, Silent>(in);
+        in.jump(pos);
+        if constexpr (Silent) {
+            return ParseRet(ret.success());
+        } else {
+            return ret.success() ? ParseRet(new Token(pos, Rule)) : ParseRet(nullptr);
+        }
+    }
+};
+
+template<RuleType R>
+constexpr At<R> operator+(R) {
+    return At<R>{};
+}
+
+/// Not match given rule and consume nothing.
+template<RuleType R>
+struct NotAt: RuleBase {
+    template<TypeHash Rule, bool Silent, typename Input>
+    static ParseRet parse(Input& in) {
+        InputPos pos = in.pos();
+        ParseRet ret = R::template parse<0, Silent>(in);
+        in.jump(pos);
+        if constexpr (Silent) {
+            return ParseRet(!ret.success());
+        } else {
+            return ret.success() ? ParseRet(nullptr) : ParseRet(new Token(pos, Rule));
+        }
+    }
+};
+
+template<RuleType R>
+constexpr NotAt<R> operator-(R) {
+    return NotAt<R>{};
+}
 
 }  // namespace qcpc
