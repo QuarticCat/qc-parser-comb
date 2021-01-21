@@ -37,6 +37,11 @@ struct MemoryInput {
         return this->_current == this->_end;
     }
 
+    /// Return number of remaining characters.
+    [[nodiscard]] size_t size() const noexcept {
+        return this->_end - this->_current;
+    }
+
     /// Return current pointer
     [[nodiscard]] const char* current() const noexcept {
         return this->_current;
