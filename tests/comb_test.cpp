@@ -59,21 +59,30 @@ TEST(CombTest, RuleStruct_Eof) {
 QCPC_DEFINE_RULE(str_rule) = str<'q', 'c', 'p', 'c'>;
 
 TEST(CombTest, RuleStruct_Str) {
-    ASSERT_TRUE(QCPC_PARSE(str_rule, StringInput("qcpc")));
+    StringInput in("qcpc");
+    ASSERT_TRUE(QCPC_PARSE(str_rule, in));
+    ASSERT_EQ(in.current(), in.end());
+
     ASSERT_FALSE(QCPC_PARSE(str_rule, StringInput("qcp")));
 }
 
 QCPC_DEFINE_RULE(at_rule) = +str_rule;
 
 TEST(CombTest, RuleStruct_At) {
-    ASSERT_TRUE(QCPC_PARSE(at_rule, StringInput("qcpc")));
+    StringInput in("qcpc");
+    ASSERT_TRUE(QCPC_PARSE(at_rule, in));
+    ASSERT_EQ(in.current(), in.begin());
+
     ASSERT_FALSE(QCPC_PARSE(at_rule, StringInput("qcp")));
 }
 
 QCPC_DEFINE_RULE(notat_rule) = -str_rule;
 
 TEST(CombTest, RuleStruct_NotAt) {
-    ASSERT_FALSE(QCPC_PARSE(notat_rule, StringInput("qcpc")));
+    StringInput in("qcpc");
+    ASSERT_FALSE(QCPC_PARSE(notat_rule, in));
+    ASSERT_EQ(in.current(), in.begin());
+
     ASSERT_TRUE(QCPC_PARSE(notat_rule, StringInput("qcp")));
 }
 
