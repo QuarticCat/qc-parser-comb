@@ -16,6 +16,7 @@ namespace qcpc {
 #define QCPC_DEFINE_RULE(name)                                               \
     template<::qcpc::RuleType InnerRule>                                     \
     struct GeneratedRule_##name: ::qcpc::RuleBase {                          \
+        /* Can not mark explicit here, it will prevent deduction. */         \
         constexpr GeneratedRule_##name(InnerRule) noexcept {}                \
                                                                              \
         template<TypeHash /* Rule */, bool Silent, typename Input>           \

@@ -21,13 +21,13 @@ struct ParseRet {
 
     /// Construct from raw ptr. Then the `ParseRet` instance has the ownership of the object it
     /// points to. (non-silent cases)
-    explicit ParseRet(Token* ptr) noexcept: _ptr(ptr) {}
+    explicit constexpr ParseRet(Token* ptr) noexcept: _ptr(ptr) {}
 
     /// Construct from unique ptr. (non-silent cases)
-    explicit ParseRet(Token::Ptr&& ptr) noexcept: _ptr(ptr.release()) {}
+    explicit constexpr ParseRet(Token::Ptr&& ptr) noexcept: _ptr(ptr.release()) {}
 
     /// Construct from a bool value indicating the matching result. (silent cases)
-    explicit ParseRet(bool result) noexcept: _result(result ? _success : _fail) {}
+    explicit constexpr ParseRet(bool result) noexcept: _result(result ? _success : _fail) {}
 
     ParseRet(ParseRet&& other) noexcept: _ptr(other._ptr) {
         if (other.is_ptr()) other._ptr = nullptr;
@@ -52,6 +52,11 @@ struct ParseRet {
         return this->_result & _flag;
     }
 
+    /// Check if the match is successful.
+    [[nodiscard]] bool success() const noexcept {
+        return this->is_ptr() ? this->_ptr != nullptr : this->_result == _success;
+    }
+
     /// Get the inner ptr and take ownership away. Caller should ensure the inner type is correct.
     Token::Ptr get_ptr() noexcept {
         Token* ret = this->_ptr;
@@ -64,7 +69,7 @@ struct ParseRet {
         return this->_result == _success;
     }
 
-    ~ParseRet() {
+    constexpr ~ParseRet() {
         if (this->is_ptr() && this->_ptr != nullptr) delete this->_ptr;
     }
 

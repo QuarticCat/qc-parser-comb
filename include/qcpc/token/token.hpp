@@ -48,6 +48,10 @@ struct Token {
             return *this->_node;
         }
 
+        [[nodiscard]] operator bool() const noexcept {
+            return this->_node != nullptr;
+        }
+
       private:
         Token* _node;
     };

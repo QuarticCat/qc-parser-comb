@@ -30,39 +30,40 @@ template<typename T>
 concept RuleType = std::derived_from<T, RuleBase>;
 // TODO: check interface
 
-// // An unavailable `Str` implementation due to some limitations of C++.
-// // I leave it here in memory of my lost youth.
-// template<const char* Pattern>
-// struct Str: RuleBase {
-//     template<TypeHash Rule, bool Silent, typename Input>
-//     static ParseRet parse(Input& in) {
-//         InputPos init_pos = in.pos();
-//
-//         for (const char* i = Pattern; *i != '\0'; ++i) {
-//             if (*i == *++in) continue;
-//             in.jump(init_pos);
-//             if constexpr (Silent)
-//                 return ParseRet(false);
-//             else
-//                 return ParseRet(nullptr);
-//         }
-//
-//         if constexpr (Silent) {
-//             return ParseRet(true);
-//         } else {
-//             TokenPos last_pos{init_pos.current, in.current(), init_pos.line, init_pos.column};
-//             return ParseRet(new Token(last_pos, Rule));
-//         }
-//     }
-//
-//     // private:
-//     //   static constexpr size_t _strlen(const char* cstr) {
-//     //       size_t ret = 0;
-//     //       while (cstr[ret] != '\0') ++ret;
-//     //       return ret;
-//     //   }
-//     //
-//     //   static constexpr size_t _len = _strlen(Pattern);
-// };
+namespace detail {
+
+constexpr ParseRet match_failed(bool silent) {
+    return silent ? ParseRet(false) : ParseRet(nullptr);
+}
+
+}  // namespace detail
+
+/// Match and consume given string.
+template<char... Cs>
+struct Str: RuleBase {
+    template<TypeHash Rule, bool Silent, typename Input>
+    static ParseRet parse(Input& in) {
+        InputPos init_pos = in.pos();
+
+        if (in.size() >= sizeof...(Cs)) {
+            for (char c: {Cs...}) {
+                if (c != *in) return detail::match_failed(Silent);
+                ++in;
+            }
+        } else {
+            return detail::match_failed(Silent);
+        }
+
+        if constexpr (Silent) {
+            return ParseRet(true);
+        } else {
+            TokenPos last_pos{init_pos.current, in.current(), init_pos.line, init_pos.column};
+            return ParseRet(new Token(last_pos, Rule));
+        }
+    }
+};
+
+template<char... Cs>
+inline constexpr Str<Cs...> str{};
 
 }  // namespace qcpc
