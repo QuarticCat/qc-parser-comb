@@ -2,7 +2,7 @@
 #include "qcpc/qcpc.hpp"
 
 TEST(CombTest, ParseRet_Token_Success) {
-    auto ptr = new qcpc::Token({}, 0);
+    auto ptr = new qcpc::Token(qcpc::TokenPos({}), 0);
     qcpc::ParseRet res(ptr);
     ASSERT_TRUE(res.is_ptr());
     ASSERT_FALSE(res.is_result());
@@ -37,6 +37,24 @@ TEST(CombTest, ParseRet_Result_Fail) {
 namespace rule_test {
 
 using namespace qcpc;
+
+QCPC_DEFINE_RULE(bof_rule) = bof;
+
+TEST(CombTest, RuleStruct_Bof) {
+    StringInput in("1");
+    ASSERT_TRUE(QCPC_PARSE(bof_rule, in));
+    ++in;
+    ASSERT_FALSE(QCPC_PARSE(bof_rule, in));
+}
+
+QCPC_DEFINE_RULE(eof_rule) = eof;
+
+TEST(CombTest, RuleStruct_Eof) {
+    StringInput in("1");
+    ASSERT_FALSE(QCPC_PARSE(eof_rule, in));
+    ++in;
+    ASSERT_TRUE(QCPC_PARSE(eof_rule, in));
+}
 
 QCPC_DEFINE_RULE(str_rule) = str<'q', 'c', 'p', 'c'>;
 

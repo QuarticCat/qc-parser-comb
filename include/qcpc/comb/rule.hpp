@@ -38,6 +38,34 @@ constexpr ParseRet match_failed(bool silent) {
 
 }  // namespace detail
 
+/// Match begin of file. Consume nothing.
+struct Bof: RuleBase {
+    template<TypeHash Rule, bool Silent, typename Input>
+    static ParseRet parse(Input& in) {
+        if constexpr (Silent) {
+            return ParseRet(in.is_bof());
+        } else {
+            return in.is_bof() ? ParseRet(new Token(TokenPos(in.pos()), Rule)) : ParseRet(nullptr);
+        }
+    }
+};
+
+inline constexpr Bof bof{};
+
+/// Match end of file. Consume nothing.
+struct Eof: RuleBase {
+    template<TypeHash Rule, bool Silent, typename Input>
+    static ParseRet parse(Input& in) {
+        if constexpr (Silent) {
+            return ParseRet(in.is_eof());
+        } else {
+            return in.is_eof() ? ParseRet(new Token(TokenPos(in.pos()), Rule)) : ParseRet(nullptr);
+        }
+    }
+};
+
+inline constexpr Eof eof{};
+
 /// Match and consume given string.
 template<char... Cs>
 struct Str: RuleBase {
@@ -57,7 +85,7 @@ struct Str: RuleBase {
         if constexpr (Silent) {
             return ParseRet(true);
         } else {
-            TokenPos last_pos{init_pos.current, in.current(), init_pos.line, init_pos.column};
+            TokenPos last_pos(init_pos, in.current());
             return ParseRet(new Token(last_pos, Rule));
         }
     }

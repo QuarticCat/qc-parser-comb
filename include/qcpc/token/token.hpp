@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "../ctti/ctti.hpp"
+#include "../input/input.hpp"
 
 namespace qcpc {
 
@@ -12,6 +13,17 @@ struct TokenPos {
     const char* end;
     size_t line;
     size_t column;
+
+    explicit TokenPos(InputPos pos) noexcept
+        : begin(pos.current), end(pos.current), line(pos.line), column(pos.column) {}
+
+    TokenPos(InputPos start, const char* end) noexcept
+        : begin(start.current), end(end), line(start.line), column(start.column) {}
+
+    TokenPos(const TokenPos&) = default;
+    TokenPos(TokenPos&&) = default;
+    TokenPos& operator=(const TokenPos&) = default;
+    TokenPos& operator=(TokenPos&&) = default;
 };
 
 struct Token {

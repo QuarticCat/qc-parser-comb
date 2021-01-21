@@ -5,7 +5,7 @@
 
 TEST(TokenTest, IterToken) {
     const char cstr[] = "Handsome QC";
-    qcpc::TokenPos pos{cstr, (&cstr)[1] - 1, 1, 0};
+    qcpc::TokenPos pos({cstr, 1, 0}, (&cstr)[1] - 1);
     qcpc::Token root(pos, 114514);
     ASSERT_EQ(root.line(), 1);
     ASSERT_EQ(root.column(), 0);
@@ -16,7 +16,7 @@ TEST(TokenTest, IterToken) {
 }
 
 TEST(TokenTest, PushIterPop) {
-    qcpc::TokenPos pos{};
+    qcpc::TokenPos pos({});
     qcpc::Token root(pos, 0);
     root.push_front(std::make_unique<qcpc::Token>(pos, 0));
     root.push_front(std::make_unique<qcpc::Token>(pos, 0));
