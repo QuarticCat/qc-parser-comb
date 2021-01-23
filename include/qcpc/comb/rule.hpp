@@ -192,6 +192,37 @@ constexpr Star<R> operator*(R) {
     return {};
 }
 
+/// PEG one-or-more `e+`.
+template<RuleType R>
+struct Plus: RuleBase {
+    QCPC_DETAIL_DEFINE_PARSE(in) {
+        if constexpr (Silent) {
+            ParseRet first = R::template parse<Silent>(in);
+            if (!first.get_result()) return first;
+            while (R::template parse<Silent>(in).get_result())
+                ;
+            return ParseRet(true);
+        } else {
+            InputPos pos = in.pos();
+            Token::Ptr head = R::template parse<Silent>(in).get_ptr();
+            if (!head) return ParseRet(nullptr);
+            Token* tail = head.get();
+            while (true) {
+                Token::Ptr ret = R::template parse<Silent>(in).get_ptr();
+                if (!ret) break;
+                tail->link(std::move(ret));
+                tail = tail->next();
+            }
+            return ParseRet(new Token(std::move(head), {pos, in.current()}, Tag));
+        }
+    }
+};
+
+template<RuleType R>
+constexpr Plus<R> operator+(R) {
+    return {};
+}
+
 /// Match (and consume) silently. The token it returns has no child.
 template<RuleType R>
 struct Silent: RuleBase {

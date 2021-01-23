@@ -117,6 +117,19 @@ TEST(CombTest, Rule_Star) {
     ASSERT_EQ(in2.current(), in2.begin());
 }
 
+QCPC_DEFINE_RULE(plus_rule) = +str_rule;
+
+TEST(CombTest, Rule_Plus) {
+    StringInput in1("qcpc"
+                    "qcpc");
+    ASSERT_TRUE(QCPC_PARSE(plus_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("qcp");
+    ASSERT_FALSE(QCPC_PARSE(plus_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
 QCPC_DEFINE_RULE(silent_rule) = ~str_rule;
 
 TEST(CombTest, Rule_Silent) {
