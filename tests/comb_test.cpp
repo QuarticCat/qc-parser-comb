@@ -40,7 +40,7 @@ using namespace qcpc;
 
 QCPC_DEFINE_RULE(bof_rule) = bof;
 
-TEST(CombTest, RuleStruct_Bof) {
+TEST(CombTest, Rule_Bof) {
     StringInput in("1");
     ASSERT_TRUE(QCPC_PARSE(bof_rule, in));
     ++in;
@@ -49,7 +49,7 @@ TEST(CombTest, RuleStruct_Bof) {
 
 QCPC_DEFINE_RULE(eof_rule) = eof;
 
-TEST(CombTest, RuleStruct_Eof) {
+TEST(CombTest, Rule_Eof) {
     StringInput in("1");
     ASSERT_FALSE(QCPC_PARSE(eof_rule, in));
     ++in;
@@ -58,7 +58,7 @@ TEST(CombTest, RuleStruct_Eof) {
 
 QCPC_DEFINE_RULE(str_rule) = str<'q', 'c', 'p', 'c'>;
 
-TEST(CombTest, RuleStruct_Str) {
+TEST(CombTest, Rule_Str) {
     StringInput in1("qcpc");
     ASSERT_TRUE(QCPC_PARSE(str_rule, in1));
     ASSERT_EQ(in1.current(), in1.end());
@@ -70,7 +70,7 @@ TEST(CombTest, RuleStruct_Str) {
 
 QCPC_DEFINE_RULE(at_rule) = &str_rule;
 
-TEST(CombTest, RuleStruct_At) {
+TEST(CombTest, Rule_At) {
     StringInput in1("qcpc");
     ASSERT_TRUE(QCPC_PARSE(at_rule, in1));
     ASSERT_EQ(in1.current(), in1.begin());
@@ -82,7 +82,7 @@ TEST(CombTest, RuleStruct_At) {
 
 QCPC_DEFINE_RULE(notat_rule) = !str_rule;
 
-TEST(CombTest, RuleStruct_NotAt) {
+TEST(CombTest, Rule_NotAt) {
     StringInput in1("qcpc");
     ASSERT_FALSE(QCPC_PARSE(notat_rule, in1));
     ASSERT_EQ(in1.current(), in1.begin());
@@ -92,9 +92,21 @@ TEST(CombTest, RuleStruct_NotAt) {
     ASSERT_EQ(in2.current(), in2.begin());
 }
 
+QCPC_DEFINE_RULE(opt_rule) = -str_rule;
+
+TEST(CombTest, Rule_Opt) {
+    StringInput in1("qcpc");
+    ASSERT_TRUE(QCPC_PARSE(opt_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("qcp");
+    ASSERT_TRUE(QCPC_PARSE(opt_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
 QCPC_DEFINE_RULE(silent_rule) = ~str_rule;
 
-TEST(CombTest, RuleStruct_Silent) {
+TEST(CombTest, Rule_Silent) {
     StringInput in1("qcpc");
     Token::Ptr root1 = QCPC_PARSE(silent_rule, in1);
     ASSERT_EQ(in1.current(), in1.end());
@@ -111,7 +123,7 @@ QCPC_DEFINE_RULE(seq_rule2) = (str_rule & str_rule) & str_rule & str_rule;
 QCPC_DEFINE_RULE(seq_rule3) = str_rule & str_rule & (str_rule & str_rule);
 QCPC_DEFINE_RULE(seq_rule4) = (str_rule & str_rule) & (str_rule & str_rule);
 
-TEST(CombTest, RuleStruct_Seq) {
+TEST(CombTest, Rule_Seq) {
     StringInput in1("qcpc"
                     "qcpc"
                     "qcpc"
@@ -151,7 +163,7 @@ QCPC_DEFINE_RULE(sor_rule2) = (str<'a'> | str<'b'>) | str<'c'> | str<'d'>;
 QCPC_DEFINE_RULE(sor_rule3) = str<'a'> | str<'b'> | (str<'c'> | str<'d'>);
 QCPC_DEFINE_RULE(sor_rule4) = (str<'a'> | str<'b'>) | (str<'c'> | str<'d'>);
 
-TEST(CombTest, RuleStruct_Sor) {
+TEST(CombTest, Rule_Sor) {
     StringInput in1("a");
     InputPos pos1 = in1.pos();
     ASSERT_TRUE(QCPC_PARSE(sor_rule1, in1));

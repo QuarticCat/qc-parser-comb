@@ -120,7 +120,7 @@ struct At: RuleBase {
 
 template<RuleType R>
 constexpr At<R> operator&(R) {
-    return At<R>{};
+    return {};
 }
 
 /// PEG not-predicate `!e`.
@@ -140,7 +140,27 @@ struct NotAt: RuleBase {
 
 template<RuleType R>
 constexpr NotAt<R> operator!(R) {
-    return NotAt<R>{};
+    return {};
+}
+
+/// PEG optional `e?`.
+template<RuleType R>
+struct Opt: RuleBase {
+    QCPC_DETAIL_DEFINE_PARSE(in) {
+        if constexpr (Silent) {
+            R::template parse<Silent>(in);
+            return ParseRet(true);
+        } else {
+            ParseRet ret = R::template parse<Silent>(in);
+            if (ret.success()) return ret;
+            return ParseRet(new Token({in.pos()}, Tag));
+        }
+    }
+};
+
+template<RuleType R>
+constexpr Opt<R> operator-(R) {
+    return {};
 }
 
 /// Match (and consume) silently. The token it returns has no child.
@@ -160,7 +180,7 @@ struct Silent: RuleBase {
 
 template<RuleType R>
 constexpr Silent<R> operator~(R) {
-    return Silent<R>{};
+    return {};
 }
 
 /// PEG sequence `e1 e2`.
