@@ -82,7 +82,10 @@ struct Str: RuleBase {
 
         if (in.size() >= sizeof...(Cs)) {
             for (char c: {Cs...}) {
-                if (c != *in) return detail::match_failed(Silent);
+                if (c != *in) {
+                    in.jump(pos);
+                    return detail::match_failed(Silent);
+                }
                 ++in;
             }
         } else {

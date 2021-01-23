@@ -59,43 +59,51 @@ TEST(CombTest, RuleStruct_Eof) {
 QCPC_DEFINE_RULE(str_rule) = str<'q', 'c', 'p', 'c'>;
 
 TEST(CombTest, RuleStruct_Str) {
-    StringInput in("qcpc");
-    ASSERT_TRUE(QCPC_PARSE(str_rule, in));
-    ASSERT_EQ(in.current(), in.end());
+    StringInput in1("qcpc");
+    ASSERT_TRUE(QCPC_PARSE(str_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
 
-    ASSERT_FALSE(QCPC_PARSE(str_rule, StringInput("qcp")));
+    StringInput in2("qcp");
+    ASSERT_FALSE(QCPC_PARSE(str_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
 }
 
 QCPC_DEFINE_RULE(at_rule) = +str_rule;
 
 TEST(CombTest, RuleStruct_At) {
-    StringInput in("qcpc");
-    ASSERT_TRUE(QCPC_PARSE(at_rule, in));
-    ASSERT_EQ(in.current(), in.begin());
+    StringInput in1("qcpc");
+    ASSERT_TRUE(QCPC_PARSE(at_rule, in1));
+    ASSERT_EQ(in1.current(), in1.begin());
 
-    ASSERT_FALSE(QCPC_PARSE(at_rule, StringInput("qcp")));
+    StringInput in2("qcp");
+    ASSERT_FALSE(QCPC_PARSE(at_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
 }
 
 QCPC_DEFINE_RULE(notat_rule) = -str_rule;
 
 TEST(CombTest, RuleStruct_NotAt) {
-    StringInput in("qcpc");
-    ASSERT_FALSE(QCPC_PARSE(notat_rule, in));
-    ASSERT_EQ(in.current(), in.begin());
+    StringInput in1("qcpc");
+    ASSERT_FALSE(QCPC_PARSE(notat_rule, in1));
+    ASSERT_EQ(in1.current(), in1.begin());
 
-    ASSERT_TRUE(QCPC_PARSE(notat_rule, StringInput("qcp")));
+    StringInput in2("qcp");
+    ASSERT_TRUE(QCPC_PARSE(notat_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
 }
 
 // TODO: need a better test case, e.g. silent seq
 QCPC_DEFINE_RULE(silent_rule) = ~str_rule;
 
 TEST(CombTest, RuleStruct_Silent) {
-    StringInput in("qcpc");
-    Token::Ptr root = QCPC_PARSE(silent_rule, in);
-    ASSERT_EQ(in.current(), in.end());
-    ASSERT_TRUE(root->is_empty());
+    StringInput in1("qcpc");
+    Token::Ptr root1 = QCPC_PARSE(silent_rule, in1);
+    ASSERT_EQ(in1.current(), in1.end());
+    ASSERT_TRUE(root1->is_empty());
 
-    ASSERT_FALSE(QCPC_PARSE(silent_rule, StringInput("qcp")));
+    StringInput in2("qcp");
+    Token::Ptr root2 = QCPC_PARSE(silent_rule, in1);
+    ASSERT_EQ(in2.current(), in2.begin());
 }
 
 }  // namespace rule_test
