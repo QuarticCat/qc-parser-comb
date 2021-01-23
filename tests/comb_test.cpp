@@ -92,7 +92,6 @@ TEST(CombTest, RuleStruct_NotAt) {
     ASSERT_EQ(in2.current(), in2.begin());
 }
 
-// TODO: need a better test case, e.g. silent seq
 QCPC_DEFINE_RULE(silent_rule) = ~str_rule;
 
 TEST(CombTest, RuleStruct_Silent) {
@@ -104,6 +103,33 @@ TEST(CombTest, RuleStruct_Silent) {
     StringInput in2("qcp");
     Token::Ptr root2 = QCPC_PARSE(silent_rule, in1);
     ASSERT_EQ(in2.current(), in2.begin());
+}
+
+QCPC_DEFINE_RULE(seq_rule1) = str_rule & str_rule & str_rule & str_rule;
+QCPC_DEFINE_RULE(seq_rule2) = (str_rule & str_rule) & str_rule & str_rule;
+QCPC_DEFINE_RULE(seq_rule3) = str_rule & str_rule & (str_rule & str_rule);
+QCPC_DEFINE_RULE(seq_rule4) = (str_rule & str_rule) & (str_rule & str_rule);
+
+TEST(CombTest, RuleStruct_Seq) {
+    StringInput in1("qcpc"
+                    "qcpc"
+                    "qcpc"
+                    "qcpc");
+    InputPos pos1 = in1.pos();
+    ASSERT_TRUE(QCPC_PARSE(seq_rule1, in1));
+    in1.jump(pos1);
+    ASSERT_TRUE(QCPC_PARSE(seq_rule2, in1));
+    in1.jump(pos1);
+    ASSERT_TRUE(QCPC_PARSE(seq_rule3, in1));
+    in1.jump(pos1);
+    ASSERT_TRUE(QCPC_PARSE(seq_rule4, in1));
+    in1.jump(pos1);
+
+    StringInput in2("qcpc");
+    ASSERT_FALSE(QCPC_PARSE(seq_rule1, in2));
+    ASSERT_FALSE(QCPC_PARSE(seq_rule2, in2));
+    ASSERT_FALSE(QCPC_PARSE(seq_rule3, in2));
+    ASSERT_FALSE(QCPC_PARSE(seq_rule4, in2));
 }
 
 }  // namespace rule_test

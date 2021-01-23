@@ -17,7 +17,7 @@ struct TokenPos {
     size_t line;
     size_t column;
 
-    explicit TokenPos(InputPos pos) noexcept
+    TokenPos(InputPos pos) noexcept
         : begin(pos.current), end(pos.current), line(pos.line), column(pos.column) {}
 
     TokenPos(InputPos start, const char* end) noexcept
@@ -75,9 +75,8 @@ struct Token {
 
     Token(TokenPos pos, RuleTag tag): _pos(pos), _tag(tag) {}
 
-    Token(InputPos pos, RuleTag tag): _pos(pos), _tag(tag) {}
-
-    Token(InputPos start, const char* end, RuleTag tag): _pos(start, end), _tag(tag) {}
+    Token(Token::Ptr children, TokenPos pos, RuleTag tag)
+        : _head_child(std::move(children)), _pos(pos), _tag(tag) {}
 
     Token(const Token&) = delete;
     Token(Token&&) = default;
@@ -140,6 +139,11 @@ struct Token {
         Ptr ret = std::move(this->_head_child);
         this->_head_child = std::move(ret->_next);
         return ret;
+    }
+
+    /// Link a node to its next.
+    void link(Ptr next) noexcept {
+        this->_next = std::move(next);
     }
 
     /// Return an iterator of the children list. It can also be used in range-based for loops.

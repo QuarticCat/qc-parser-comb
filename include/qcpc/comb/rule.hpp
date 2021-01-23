@@ -95,7 +95,7 @@ struct Str: RuleBase {
         if constexpr (Silent) {
             return ParseRet(true);
         } else {
-            return ParseRet(new Token(pos, in.current(), Tag));
+            return ParseRet(new Token({pos, in.current()}, Tag));
         }
     }
 };
@@ -113,7 +113,7 @@ struct At: RuleBase {
         if constexpr (Silent) {
             return ParseRet(ret.success());
         } else {
-            return ret.success() ? ParseRet(new Token(pos, Tag)) : ParseRet(nullptr);
+            return ret.success() ? ParseRet(new Token({pos}, Tag)) : ParseRet(nullptr);
         }
     }
 };
@@ -133,7 +133,7 @@ struct NotAt: RuleBase {
         if constexpr (Silent) {
             return ParseRet(!ret.success());
         } else {
-            return ret.success() ? ParseRet(nullptr) : ParseRet(new Token(pos, Tag));
+            return ret.success() ? ParseRet(nullptr) : ParseRet(new Token({pos}, Tag));
         }
     }
 };
@@ -152,7 +152,8 @@ struct Silent: RuleBase {
         } else {
             InputPos pos = in.pos();
             ParseRet ret = R::template parse<Silent>(in);
-            return ret.success() ? ParseRet(new Token(pos, in.current(), Tag)) : ParseRet(nullptr);
+            return ret.success() ? ParseRet(new Token({pos, in.current()}, Tag))
+                                 : ParseRet(nullptr);
         }
     }
 };
@@ -160,6 +161,57 @@ struct Silent: RuleBase {
 template<RuleType R>
 constexpr Silent<R> operator~(R) {
     return Silent<R>{};
+}
+
+/// PEG sequence
+template<RuleType R, RuleType... Rs>
+struct Seq: RuleBase {
+    QCPC_DETAIL_DEFINE_PARSE(in) {
+        if constexpr (Silent) {
+            return ParseRet(
+                (R::template parse<Silent>(in) && ... && Rs::template parse<Silent>(in)));
+        } else {
+            InputPos pos = in.pos();
+
+            Token::Ptr head = R::template parse<Silent>(in).get_ptr();
+            if (!head) {
+                in.jump(pos);
+                return ParseRet(nullptr);
+            }
+
+            Token* tail = head.get();  // A token holds its ownership, so it is raw ptr.
+            for (auto f: {Rs::template parse<Silent, NO_RULE, Input>...}) {
+                Token::Ptr ret = f(in).get_ptr();
+                if (!ret) {
+                    in.jump(pos);
+                    return ParseRet(nullptr);
+                }
+                tail->link(std::move(ret));
+                tail = tail->next();
+            }
+            return ParseRet(new Token(std::move(head), {pos, in.current()}, Tag));
+        }
+    }
+};
+
+template<RuleType R1, RuleType R2>
+constexpr Seq<R1, R2> operator&(R1, R2) {
+    return {};
+}
+
+template<RuleType R1, RuleType... R2s>
+constexpr Seq<R1, R2s...> operator&(R1, Seq<R2s...>) {
+    return {};
+}
+
+template<RuleType... R1s, RuleType R2>
+constexpr Seq<R1s..., R2> operator&(Seq<R1s...>, R2) {
+    return {};
+}
+
+template<RuleType... R1s, RuleType... R2s>
+constexpr Seq<R1s..., R2s...> operator&(Seq<R1s...>, Seq<R2s...>) {
+    return {};
 }
 
 }  // namespace qcpc
