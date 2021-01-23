@@ -45,8 +45,8 @@ constexpr ParseRet match_failed(bool silent) {
 
 }  // namespace detail
 
-/// Match begin of file. Consume nothing.
-struct Bof: RuleBase {
+/// Match the beginning of input. Consume nothing.
+struct Boi: RuleBase {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         if constexpr (Silent) {
             return ParseRet(in.is_bof());
@@ -56,10 +56,10 @@ struct Bof: RuleBase {
     }
 };
 
-inline constexpr Bof bof{};
+inline constexpr Boi boi{};
 
-/// Match end of file. Consume nothing.
-struct Eof: RuleBase {
+/// Match the end of input. Consume nothing.
+struct Eoi: RuleBase {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         if constexpr (Silent) {
             return ParseRet(in.is_eof());
@@ -69,7 +69,34 @@ struct Eof: RuleBase {
     }
 };
 
-inline constexpr Eof eof{};
+inline constexpr Eoi eoi{};
+
+/// Match the end of lines. Consume "\r\n" or "\n".
+struct Eol: RuleBase {
+    QCPC_DETAIL_DEFINE_PARSE(in) {
+        InputPos pos = in.pos();
+        if (*in == '\n') {
+            ++in;
+            goto success;
+        }
+        if (*in == '\r') {
+            if (*++in == '\n') {
+                ++in;
+                goto success;
+            }
+            in.jump(pos);
+        }
+        return detail::match_failed(Silent);
+    success:
+        if constexpr (Silent) {
+            return ParseRet(true);
+        } else {
+            return ParseRet(new Token({pos, in.current()}, Tag));
+        }
+    }
+};
+
+inline constexpr Eol eol{};
 
 /// Match and consume given string.
 template<char... Cs>

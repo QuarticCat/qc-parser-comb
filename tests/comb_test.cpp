@@ -38,22 +38,38 @@ namespace rule_test {
 
 using namespace qcpc;
 
-QCPC_DEFINE_RULE(bof_rule) = bof;
+QCPC_DEFINE_RULE(boi_rule) = boi;
 
-TEST(CombTest, Rule_Bof) {
+TEST(CombTest, Rule_Boi) {
     StringInput in("1");
-    ASSERT_TRUE(QCPC_PARSE(bof_rule, in));
+    ASSERT_TRUE(QCPC_PARSE(boi_rule, in));
     ++in;
-    ASSERT_FALSE(QCPC_PARSE(bof_rule, in));
+    ASSERT_FALSE(QCPC_PARSE(boi_rule, in));
 }
 
-QCPC_DEFINE_RULE(eof_rule) = eof;
+QCPC_DEFINE_RULE(eoi_rule) = eoi;
 
-TEST(CombTest, Rule_Eof) {
+TEST(CombTest, Rule_Eoi) {
     StringInput in("1");
-    ASSERT_FALSE(QCPC_PARSE(eof_rule, in));
+    ASSERT_FALSE(QCPC_PARSE(eoi_rule, in));
     ++in;
-    ASSERT_TRUE(QCPC_PARSE(eof_rule, in));
+    ASSERT_TRUE(QCPC_PARSE(eoi_rule, in));
+}
+
+QCPC_DEFINE_RULE(eol_rule) = eol;
+
+TEST(CombTest, Rule_Eol) {
+    StringInput in1("\r\n");
+    ASSERT_TRUE(QCPC_PARSE(eol_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("\n");
+    ASSERT_TRUE(QCPC_PARSE(eol_rule, in2));
+    ASSERT_EQ(in2.current(), in2.end());
+
+    StringInput in3("\r");
+    ASSERT_FALSE(QCPC_PARSE(eol_rule, in3));
+    ASSERT_EQ(in3.current(), in3.begin());
 }
 
 QCPC_DEFINE_RULE(str_rule) = str<'q', 'c', 'p', 'c'>;
