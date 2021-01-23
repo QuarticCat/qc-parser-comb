@@ -163,6 +163,35 @@ constexpr Opt<R> operator-(R) {
     return {};
 }
 
+/// PEG zero-or-more `e*`.
+template<RuleType R>
+struct Star: RuleBase {
+    QCPC_DETAIL_DEFINE_PARSE(in) {
+        if constexpr (Silent) {
+            while (R::template parse<Silent>(in).get_result())
+                ;  // too lazy to adjust clang-format here
+            return ParseRet(true);
+        } else {
+            InputPos pos = in.pos();
+            Token::Ptr head = R::template parse<Silent>(in).get_ptr();
+            if (!head) return ParseRet(new Token({pos}, Tag));  // no need to jump
+            Token* tail = head.get();  // A token holds the ownership, so it is a raw ptr.
+            while (true) {
+                Token::Ptr ret = R::template parse<Silent>(in).get_ptr();
+                if (!ret) break;
+                tail->link(std::move(ret));
+                tail = tail->next();
+            }
+            return ParseRet(new Token(std::move(head), {pos, in.current()}, Tag));
+        }
+    }
+};
+
+template<RuleType R>
+constexpr Star<R> operator*(R) {
+    return {};
+}
+
 /// Match (and consume) silently. The token it returns has no child.
 template<RuleType R>
 struct Silent: RuleBase {
@@ -188,7 +217,6 @@ template<RuleType R, RuleType... Rs>
 struct Seq: RuleBase {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         InputPos pos = in.pos();
-
         if constexpr (Silent) {
             bool result = (R::template parse<Silent>(in).get_result() && ... &&
                            Rs::template parse<Silent>(in).get_result());
@@ -196,11 +224,8 @@ struct Seq: RuleBase {
             return ParseRet(result);
         } else {
             Token::Ptr head = R::template parse<Silent>(in).get_ptr();
-            if (!head) {
-                in.jump(pos);
-                return ParseRet(nullptr);
-            }
-            Token* tail = head.get();  // A token holds the ownership, so it is a raw ptr.
+            if (!head) return ParseRet(nullptr);
+            Token* tail = head.get();
             for (auto f: {Rs::template parse<Silent, NO_RULE, Input>...}) {
                 Token::Ptr ret = f(in).get_ptr();
                 if (!ret) {
