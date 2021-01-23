@@ -68,7 +68,7 @@ TEST(CombTest, RuleStruct_Str) {
     ASSERT_EQ(in2.current(), in2.begin());
 }
 
-QCPC_DEFINE_RULE(at_rule) = +str_rule;
+QCPC_DEFINE_RULE(at_rule) = &str_rule;
 
 TEST(CombTest, RuleStruct_At) {
     StringInput in1("qcpc");
@@ -80,7 +80,7 @@ TEST(CombTest, RuleStruct_At) {
     ASSERT_EQ(in2.current(), in2.begin());
 }
 
-QCPC_DEFINE_RULE(notat_rule) = -str_rule;
+QCPC_DEFINE_RULE(notat_rule) = !str_rule;
 
 TEST(CombTest, RuleStruct_NotAt) {
     StringInput in1("qcpc");
@@ -106,6 +106,7 @@ TEST(CombTest, RuleStruct_Silent) {
 }
 
 QCPC_DEFINE_RULE(seq_rule1) = str_rule & str_rule & str_rule & str_rule;
+QCPC_DEFINE_RULE(seq_rule1s) = ~(str_rule & str_rule & str_rule & str_rule);
 QCPC_DEFINE_RULE(seq_rule2) = (str_rule & str_rule) & str_rule & str_rule;
 QCPC_DEFINE_RULE(seq_rule3) = str_rule & str_rule & (str_rule & str_rule);
 QCPC_DEFINE_RULE(seq_rule4) = (str_rule & str_rule) & (str_rule & str_rule);
@@ -117,19 +118,68 @@ TEST(CombTest, RuleStruct_Seq) {
                     "qcpc");
     InputPos pos1 = in1.pos();
     ASSERT_TRUE(QCPC_PARSE(seq_rule1, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+    in1.jump(pos1);
+    ASSERT_TRUE(QCPC_PARSE(seq_rule1s, in1));
+    ASSERT_EQ(in1.current(), in1.end());
     in1.jump(pos1);
     ASSERT_TRUE(QCPC_PARSE(seq_rule2, in1));
+    ASSERT_EQ(in1.current(), in1.end());
     in1.jump(pos1);
     ASSERT_TRUE(QCPC_PARSE(seq_rule3, in1));
+    ASSERT_EQ(in1.current(), in1.end());
     in1.jump(pos1);
     ASSERT_TRUE(QCPC_PARSE(seq_rule4, in1));
-    in1.jump(pos1);
+    ASSERT_EQ(in1.current(), in1.end());
 
     StringInput in2("qcpc");
     ASSERT_FALSE(QCPC_PARSE(seq_rule1, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+    ASSERT_FALSE(QCPC_PARSE(seq_rule1s, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
     ASSERT_FALSE(QCPC_PARSE(seq_rule2, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
     ASSERT_FALSE(QCPC_PARSE(seq_rule3, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
     ASSERT_FALSE(QCPC_PARSE(seq_rule4, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
+QCPC_DEFINE_RULE(sor_rule1) = str<'a'> | str<'b'> | str<'c'> | str<'d'>;
+QCPC_DEFINE_RULE(sor_rule1s) = ~(str<'a'> | str<'b'> | str<'c'> | str<'d'>);
+QCPC_DEFINE_RULE(sor_rule2) = (str<'a'> | str<'b'>) | str<'c'> | str<'d'>;
+QCPC_DEFINE_RULE(sor_rule3) = str<'a'> | str<'b'> | (str<'c'> | str<'d'>);
+QCPC_DEFINE_RULE(sor_rule4) = (str<'a'> | str<'b'>) | (str<'c'> | str<'d'>);
+
+TEST(CombTest, RuleStruct_Sor) {
+    StringInput in1("a");
+    InputPos pos1 = in1.pos();
+    ASSERT_TRUE(QCPC_PARSE(sor_rule1, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+    in1.jump(pos1);
+    ASSERT_TRUE(QCPC_PARSE(sor_rule1s, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+    in1.jump(pos1);
+    ASSERT_TRUE(QCPC_PARSE(sor_rule2, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+    in1.jump(pos1);
+    ASSERT_TRUE(QCPC_PARSE(sor_rule3, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+    in1.jump(pos1);
+    ASSERT_TRUE(QCPC_PARSE(sor_rule4, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("e");
+    ASSERT_FALSE(QCPC_PARSE(sor_rule1, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+    ASSERT_FALSE(QCPC_PARSE(sor_rule1s, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+    ASSERT_FALSE(QCPC_PARSE(sor_rule2, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+    ASSERT_FALSE(QCPC_PARSE(sor_rule3, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+    ASSERT_FALSE(QCPC_PARSE(sor_rule4, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
 }
 
 }  // namespace rule_test

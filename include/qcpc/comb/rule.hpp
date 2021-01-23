@@ -103,7 +103,7 @@ struct Str: RuleBase {
 template<char... Cs>
 inline constexpr Str<Cs...> str{};
 
-/// Match given rule but consume nothing.
+// PEG and-predicate `&e`.
 template<RuleType R>
 struct At: RuleBase {
     QCPC_DETAIL_DEFINE_PARSE(in) {
@@ -119,11 +119,11 @@ struct At: RuleBase {
 };
 
 template<RuleType R>
-constexpr At<R> operator+(R) {
+constexpr At<R> operator&(R) {
     return At<R>{};
 }
 
-/// Not match given rule and consume nothing.
+/// PEG not-predicate `!e`.
 template<RuleType R>
 struct NotAt: RuleBase {
     QCPC_DETAIL_DEFINE_PARSE(in) {
@@ -139,7 +139,7 @@ struct NotAt: RuleBase {
 };
 
 template<RuleType R>
-constexpr NotAt<R> operator-(R) {
+constexpr NotAt<R> operator!(R) {
     return NotAt<R>{};
 }
 
@@ -148,10 +148,10 @@ template<RuleType R>
 struct Silent: RuleBase {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         if constexpr (Silent) {
-            return R::template parse<Silent>(in);
+            return R::template parse<true>(in);
         } else {
             InputPos pos = in.pos();
-            ParseRet ret = R::template parse<Silent>(in);
+            ParseRet ret = R::template parse<true>(in);
             return ret.success() ? ParseRet(new Token({pos, in.current()}, Tag))
                                  : ParseRet(nullptr);
         }
@@ -163,23 +163,24 @@ constexpr Silent<R> operator~(R) {
     return Silent<R>{};
 }
 
-/// PEG sequence
+/// PEG sequence `e1 e2`.
 template<RuleType R, RuleType... Rs>
 struct Seq: RuleBase {
     QCPC_DETAIL_DEFINE_PARSE(in) {
-        if constexpr (Silent) {
-            return ParseRet(
-                (R::template parse<Silent>(in) && ... && Rs::template parse<Silent>(in)));
-        } else {
-            InputPos pos = in.pos();
+        InputPos pos = in.pos();
 
+        if constexpr (Silent) {
+            bool result = (R::template parse<Silent>(in).get_result() && ... &&
+                           Rs::template parse<Silent>(in).get_result());
+            if (!result) in.jump(pos);
+            return ParseRet(result);
+        } else {
             Token::Ptr head = R::template parse<Silent>(in).get_ptr();
             if (!head) {
                 in.jump(pos);
                 return ParseRet(nullptr);
             }
-
-            Token* tail = head.get();  // A token holds its ownership, so it is raw ptr.
+            Token* tail = head.get();  // A token holds the ownership, so it is a raw ptr.
             for (auto f: {Rs::template parse<Silent, NO_RULE, Input>...}) {
                 Token::Ptr ret = f(in).get_ptr();
                 if (!ret) {
@@ -211,6 +212,42 @@ constexpr Seq<R1s..., R2> operator&(Seq<R1s...>, R2) {
 
 template<RuleType... R1s, RuleType... R2s>
 constexpr Seq<R1s..., R2s...> operator&(Seq<R1s...>, Seq<R2s...>) {
+    return {};
+}
+
+/// PEG ordered choice `e1 | e2`.
+template<RuleType... Rs>
+struct Sor: RuleBase {
+    QCPC_DETAIL_DEFINE_PARSE(in) {
+        if constexpr (Silent) {
+            return ParseRet((... || Rs::template parse<Silent>(in).get_result()));
+        } else {
+            for (auto f: {Rs::template parse<Silent, Tag, Input>...}) {
+                ParseRet ret = f(in);
+                if (ret.success()) return ret;
+            }
+            return ParseRet(nullptr);
+        }
+    }
+};
+
+template<RuleType R1, RuleType R2>
+constexpr Sor<R1, R2> operator|(R1, R2) {
+    return {};
+}
+
+template<RuleType R1, RuleType... R2s>
+constexpr Sor<R1, R2s...> operator|(R1, Sor<R2s...>) {
+    return {};
+}
+
+template<RuleType... R1s, RuleType R2>
+constexpr Sor<R1s..., R2> operator|(Sor<R1s...>, R2) {
+    return {};
+}
+
+template<RuleType... R1s, RuleType... R2s>
+constexpr Sor<R1s..., R2s...> operator|(Sor<R1s...>, Sor<R2s...>) {
     return {};
 }
 
