@@ -22,7 +22,7 @@ TEST(TokenTest, PushIterPop) {
     root.push_front(std::make_unique<qcpc::Token>(pos, 0));
     root.push_front(std::make_unique<qcpc::Token>(pos, 0));
     size_t count = 0;
-    for (auto&& node: root.iter_children()) ++count;
+    for ([[maybe_unused]] auto&& _: root.iter_children()) ++count;
     ASSERT_EQ(count, 3);
     for (size_t i = 0; i < count; ++i) root.pop_front();
     ASSERT_EQ(root.head_child(), nullptr);
