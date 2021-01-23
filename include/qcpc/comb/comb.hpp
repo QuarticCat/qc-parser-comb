@@ -5,7 +5,7 @@
 
 namespace qcpc {
 
-/// A macro helps you define your own rule which has an unique `TypeHash`. All tokens it matches
+/// A macro helps you define your own rule which has an unique `RuleTag`. All tokens it matches
 /// will have this hash tag. You should always define your rules by this macro. Note that this macro
 /// can not be used in scopes.
 ///
@@ -13,18 +13,24 @@ namespace qcpc {
 /// ```
 /// QCPC_DEFINE_RULE(my_rule) = rule_expression;
 /// ```
-#define QCPC_DEFINE_RULE(name)                                               \
-    template<::qcpc::RuleType InnerRule>                                     \
-    struct GeneratedRule_##name: ::qcpc::RuleBase {                          \
-        /* Can not mark explicit here, it will prevent deduction. */         \
-        constexpr GeneratedRule_##name(InnerRule) noexcept {}                \
-                                                                             \
-        template<TypeHash /* Rule */, bool Silent, typename Input>           \
-        static ::qcpc::ParseRet parse(Input& in) {                           \
-            constexpr auto hash = ::qcpc::type_hash<GeneratedRule_##name>(); \
-            return InnerRule::template parse<hash, Silent>(in);              \
-        }                                                                    \
-    };                                                                       \
+#define QCPC_DEFINE_RULE(name)                                                   \
+    template<::qcpc::RuleType InnerRule>                                         \
+    struct GeneratedRule_##name: ::qcpc::RuleBase {                              \
+        /* Can not mark explicit here, it will prevent deduction. */             \
+        constexpr GeneratedRule_##name(InnerRule) noexcept {}                    \
+                                                                                 \
+        [[nodiscard]] constexpr size_t tag() const noexcept {                    \
+            return _tag;                                                         \
+        }                                                                        \
+                                                                                 \
+        template<bool Silent, ::qcpc::RuleTag = ::qcpc::NO_RULE, typename Input> \
+        static ::qcpc::ParseRet parse(Input& in) {                               \
+            return InnerRule::template parse<Silent, _tag>(in);                  \
+        }                                                                        \
+                                                                                 \
+      private:                                                                   \
+        static constexpr size_t _tag = __COUNTER__;                              \
+    };                                                                           \
     inline constexpr GeneratedRule_##name name
 
 /// Parse and return token tree.
@@ -35,7 +41,7 @@ namespace qcpc {
 /// ```
 template<RuleType T, typename Input>
 Token::Ptr parse(Input&& in) {
-    ParseRet ret = T::template parse<0, false>(in);
+    ParseRet ret = T::template parse<false>(in);
     return ret.get_ptr();
 }
 

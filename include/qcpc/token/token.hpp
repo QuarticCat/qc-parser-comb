@@ -3,10 +3,13 @@
 #include <cstddef>
 #include <memory>
 
-#include "../ctti/ctti.hpp"
 #include "../input/input.hpp"
 
 namespace qcpc {
+
+// They are defined here to avoid circular include.
+using RuleTag = size_t;
+inline constexpr size_t NO_RULE = std::numeric_limits<size_t>::max();
 
 struct TokenPos {
     const char* begin;
@@ -70,11 +73,11 @@ struct Token {
 
     using Ptr = std::unique_ptr<Token>;  // save your keyboard and eyes :)
 
-    Token(TokenPos pos, TypeHash rule): _pos(pos), _rule(rule) {}
+    Token(TokenPos pos, RuleTag tag): _pos(pos), _tag(tag) {}
 
-    Token(InputPos pos, TypeHash rule): _pos(pos), _rule(rule) {}
+    Token(InputPos pos, RuleTag tag): _pos(pos), _tag(tag) {}
 
-    Token(InputPos start, const char* end, TypeHash rule): _pos(start, end), _rule(rule) {}
+    Token(InputPos start, const char* end, RuleTag tag): _pos(start, end), _tag(tag) {}
 
     Token(const Token&) = delete;
     Token(Token&&) = default;
@@ -117,8 +120,8 @@ struct Token {
     }
 
     /// Return type hash of its rule.
-    [[nodiscard]] TypeHash rule() const noexcept {
-        return this->_rule;
+    [[nodiscard]] RuleTag rule() const noexcept {
+        return this->_tag;
     }
 
     /// Return whether it has children or not.
@@ -157,7 +160,7 @@ struct Token {
     Ptr _head_child = nullptr;
     Ptr _next = nullptr;
     TokenPos _pos;
-    TypeHash _rule;
+    RuleTag _tag;
 };
 
 }  // namespace qcpc
