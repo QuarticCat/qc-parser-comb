@@ -14,10 +14,12 @@ namespace qcpc {
 /// QCPC_DEFINE_RULE(my_rule) = rule_expression;
 /// ```
 #define QCPC_DEFINE_RULE(name)                                                   \
-    template<::qcpc::RuleType InnerRule>                                         \
+    template<::qcpc::RuleType R>                                                 \
     struct GeneratedRule_##name: ::qcpc::RuleBase {                              \
+        using Rule = R;                                                          \
+                                                                                 \
         /* Can not mark explicit here, it will prevent deduction. */             \
-        constexpr GeneratedRule_##name(InnerRule) noexcept {}                    \
+        constexpr GeneratedRule_##name(R) noexcept {}                            \
                                                                                  \
         [[nodiscard]] constexpr size_t tag() const noexcept {                    \
             return _tag;                                                         \
@@ -25,7 +27,7 @@ namespace qcpc {
                                                                                  \
         template<bool Silent, ::qcpc::RuleTag = ::qcpc::NO_RULE, typename Input> \
         static ::qcpc::ParseRet parse(Input& in) {                               \
-            return InnerRule::template parse<Silent, _tag>(in);                  \
+            return R::template parse<Silent, _tag>(in);                          \
         }                                                                        \
                                                                                  \
       private:                                                                   \
