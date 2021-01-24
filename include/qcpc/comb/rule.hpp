@@ -146,7 +146,7 @@ struct At: RuleBase {
 };
 
 template<RuleType R>
-constexpr At<R> operator&(R) {
+[[nodiscard]] constexpr At<R> operator&(R) {
     return {};
 }
 
@@ -166,7 +166,7 @@ struct NotAt: RuleBase {
 };
 
 template<RuleType R>
-constexpr NotAt<R> operator!(R) {
+[[nodiscard]] constexpr NotAt<R> operator!(R) {
     return {};
 }
 
@@ -186,7 +186,7 @@ struct Opt: RuleBase {
 };
 
 template<RuleType R>
-constexpr Opt<R> operator-(R) {
+[[nodiscard]] constexpr Opt<R> operator-(R) {
     return {};
 }
 
@@ -215,7 +215,7 @@ struct Star: RuleBase {
 };
 
 template<RuleType R>
-constexpr Star<R> operator*(R) {
+[[nodiscard]] constexpr Star<R> operator*(R) {
     return {};
 }
 
@@ -246,7 +246,7 @@ struct Plus: RuleBase {
 };
 
 template<RuleType R>
-constexpr Plus<R> operator+(R) {
+[[nodiscard]] constexpr Plus<R> operator+(R) {
     return {};
 }
 
@@ -266,7 +266,7 @@ struct Silent: RuleBase {
 };
 
 template<RuleType R>
-constexpr Silent<R> operator~(R) {
+[[nodiscard]] constexpr Silent<R> operator~(R) {
     return {};
 }
 
@@ -299,22 +299,22 @@ struct Seq: RuleBase {
 };
 
 template<RuleType R1, RuleType R2>
-constexpr Seq<R1, R2> operator&(R1, R2) {
+[[nodiscard]] constexpr Seq<R1, R2> operator&(R1, R2) {
     return {};
 }
 
 template<RuleType R1, RuleType... R2s>
-constexpr Seq<R1, R2s...> operator&(R1, Seq<R2s...>) {
+[[nodiscard]] constexpr Seq<R1, R2s...> operator&(R1, Seq<R2s...>) {
     return {};
 }
 
 template<RuleType... R1s, RuleType R2>
-constexpr Seq<R1s..., R2> operator&(Seq<R1s...>, R2) {
+[[nodiscard]] constexpr Seq<R1s..., R2> operator&(Seq<R1s...>, R2) {
     return {};
 }
 
 template<RuleType... R1s, RuleType... R2s>
-constexpr Seq<R1s..., R2s...> operator&(Seq<R1s...>, Seq<R2s...>) {
+[[nodiscard]] constexpr Seq<R1s..., R2s...> operator&(Seq<R1s...>, Seq<R2s...>) {
     return {};
 }
 
@@ -335,22 +335,22 @@ struct Sor: RuleBase {
 };
 
 template<RuleType R1, RuleType R2>
-constexpr Sor<R1, R2> operator|(R1, R2) {
+[[nodiscard]] constexpr Sor<R1, R2> operator|(R1, R2) {
     return {};
 }
 
 template<RuleType R1, RuleType... R2s>
-constexpr Sor<R1, R2s...> operator|(R1, Sor<R2s...>) {
+[[nodiscard]] constexpr Sor<R1, R2s...> operator|(R1, Sor<R2s...>) {
     return {};
 }
 
 template<RuleType... R1s, RuleType R2>
-constexpr Sor<R1s..., R2> operator|(Sor<R1s...>, R2) {
+[[nodiscard]] constexpr Sor<R1s..., R2> operator|(Sor<R1s...>, R2) {
     return {};
 }
 
 template<RuleType... R1s, RuleType... R2s>
-constexpr Sor<R1s..., R2s...> operator|(Sor<R1s...>, Sor<R2s...>) {
+[[nodiscard]] constexpr Sor<R1s..., R2s...> operator|(Sor<R1s...>, Sor<R2s...>) {
     return {};
 }
 
