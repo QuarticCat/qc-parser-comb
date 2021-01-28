@@ -71,6 +71,19 @@ struct Eoi: RuleBase {
 
 inline constexpr Eoi eoi{};
 
+/// Match the beginning of lines. Consume nothing.
+struct Bol: RuleBase {
+    QCPC_DETAIL_DEFINE_PARSE(in) {
+        if constexpr (Silent) {
+            return ParseRet(in.column() == 0);
+        } else {
+            return in.column() == 0 ? ParseRet(new Token(in.pos(), Tag)) : ParseRet(nullptr);
+        }
+    }
+};
+
+inline constexpr Bol bol{};
+
 /// Match the end of lines. Consume "\r\n" or "\n".
 struct Eol: RuleBase {
     QCPC_DETAIL_DEFINE_PARSE(in) {

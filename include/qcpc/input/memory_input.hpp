@@ -50,14 +50,24 @@ struct MemoryInput {
         return this->_end - this->_current;
     }
 
-    /// Return current pointer
+    /// Return current pointer.
     [[nodiscard]] const char* current() const noexcept {
         return this->_current;
     }
 
-    /// Return current position
+    /// Return current position.
     [[nodiscard]] InputPos pos() const noexcept {
         return {this->_current, this->_line, this->_column};
+    }
+
+    /// Return current line.
+    [[nodiscard]] size_t line() const noexcept {
+        return this->_line;
+    }
+
+    /// Return current column.
+    [[nodiscard]] size_t column() const noexcept {
+        return this->_column;
     }
 
     /// Jump to given position. Caller should ensure the correctness of the argument.

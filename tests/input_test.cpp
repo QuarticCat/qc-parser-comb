@@ -13,11 +13,11 @@ void test_helper(Input& in, bool jump = false) {
     ASSERT_EQ(*++in, '1');
     ASSERT_EQ(*++in, '2');
     ASSERT_EQ(*++in, '\n');
-    ASSERT_EQ(in.pos().line, 1);
-    ASSERT_EQ(in.pos().column, 3);
+    ASSERT_EQ(in.line(), 1);
+    ASSERT_EQ(in.column(), 3);
     ++in;
-    ASSERT_EQ(in.pos().line, 2);
-    ASSERT_EQ(in.pos().column, 0);
+    ASSERT_EQ(in.line(), 2);
+    ASSERT_EQ(in.column(), 0);
 
     ASSERT_EQ(in.size(), 0);
     ASSERT_TRUE(in.is_eof());

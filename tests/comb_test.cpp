@@ -58,6 +58,19 @@ TEST(CombTest, Rule_Eoi) {
     ASSERT_TRUE(QCPC_PARSE(eoi_rule, in));
 }
 
+QCPC_DEFINE_RULE(bol_rule) = bol;
+
+TEST(CombTest, Rule_Bol) {
+    StringInput in("1\n2");
+    ASSERT_TRUE(QCPC_PARSE(bol_rule, in));
+    ++in;
+    ASSERT_FALSE(QCPC_PARSE(bol_rule, in));
+    ++in;
+    ASSERT_TRUE(QCPC_PARSE(bol_rule, in));
+    ++in;
+    ASSERT_FALSE(QCPC_PARSE(bol_rule, in));
+}
+
 QCPC_DEFINE_RULE(eol_rule) = eol;
 
 TEST(CombTest, Rule_Eol) {
