@@ -208,8 +208,7 @@ template<RuleType R>
 struct Star: RuleBase {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         if constexpr (Silent) {
-            while (R::template parse<Silent>(in).get_result())
-                ;  // too lazy to adjust clang-format here
+            while (R::template parse<Silent>(in).get_result()) {}
             return ParseRet(true);
         } else {
             InputPos pos = in.pos();
@@ -239,8 +238,7 @@ struct Plus: RuleBase {
         if constexpr (Silent) {
             ParseRet first = R::template parse<Silent>(in);
             if (!first.get_result()) return first;
-            while (R::template parse<Silent>(in).get_result())
-                ;
+            while (R::template parse<Silent>(in).get_result()) {}
             return ParseRet(true);
         } else {
             InputPos pos = in.pos();
