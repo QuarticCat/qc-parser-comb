@@ -15,7 +15,7 @@ namespace qcpc {
 /// ```
 #define QCPC_DEFINE_RULE(name)                                                   \
     template<::qcpc::RuleType R>                                                 \
-    struct GeneratedRule_##name: ::qcpc::RuleBase {                              \
+    struct GeneratedRule_##name {                                                \
         using Rule = R;                                                          \
                                                                                  \
         /* Can not mark explicit here, it will prevent deduction. */             \

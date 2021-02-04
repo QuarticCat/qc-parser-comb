@@ -24,16 +24,16 @@ struct ParseRet {
     explicit constexpr ParseRet(Token* ptr) noexcept: _ptr(ptr) {}
 
     /// Construct from unique ptr. (non-silent cases)
-    explicit constexpr ParseRet(Token::Ptr&& ptr) noexcept: _ptr(ptr.release()) {}
+    explicit ParseRet(Token::Ptr&& ptr) noexcept: _ptr(ptr.release()) {}
 
     /// Construct from a bool value indicating the matching result. (silent cases)
     explicit constexpr ParseRet(bool result) noexcept: _result(result ? _success : _fail) {}
 
-    ParseRet(ParseRet&& other) noexcept: _ptr(other._ptr) {
+    constexpr ParseRet(ParseRet&& other) noexcept: _ptr(other._ptr) {
         if (other.is_ptr()) other._ptr = nullptr;
     }
 
-    ParseRet& operator=(ParseRet&& other) noexcept {
+    constexpr ParseRet& operator=(ParseRet&& other) noexcept {
         this->_ptr = other._ptr;
         if (other.is_ptr()) other._ptr = nullptr;
         return *this;
@@ -43,17 +43,17 @@ struct ParseRet {
     ParseRet& operator=(const ParseRet&) = delete;
 
     /// Check if the inner type is ptr.
-    [[nodiscard]] bool is_ptr() const noexcept {
+    [[nodiscard]] constexpr bool is_ptr() const noexcept {
         return !this->is_result();
     }
 
     /// Check if the inner type is result.
-    [[nodiscard]] bool is_result() const noexcept {
+    [[nodiscard]] constexpr bool is_result() const noexcept {
         return this->_result & _flag;
     }
 
     /// Check if the match is successful.
-    [[nodiscard]] bool success() const noexcept {
+    [[nodiscard]] constexpr bool success() const noexcept {
         return this->is_ptr() ? this->_ptr != nullptr : this->_result == _success;
     }
 
@@ -65,7 +65,7 @@ struct ParseRet {
     }
 
     /// Get the inner result. Caller should ensure the inner type is correct.
-    [[nodiscard]] bool get_result() const noexcept {
+    [[nodiscard]] constexpr bool get_result() const noexcept {
         return this->_result == _success;
     }
 

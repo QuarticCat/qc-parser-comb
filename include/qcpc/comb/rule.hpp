@@ -2,7 +2,9 @@
 
 #include <concepts>
 #include <cstddef>
+#include <initializer_list>
 #include <limits>
+#include <utility>
 
 #include "../input/input.hpp"
 #include "../token/token.hpp"
@@ -10,12 +12,11 @@
 
 namespace qcpc {
 
-/// Tag class to indicate a class is a rule type. Every rule type should explicitly or implicitly
-/// inherit from this class. "Implicitly" means inherit from other legal rule types.
+/// Concept to check if a type is a rule type.
 ///
 /// A rule type should be like:
 /// ```
-/// struct RuleTemplate: RuleBase {
+/// struct RuleTemplate {
 ///     /// Parse and return matched token (or just bool). To see what should be returned, please
 ///     /// refer to the doc of `ParseRet`. This function is also responsible to recover the input
 ///     /// if parse fail.
@@ -23,19 +24,17 @@ namespace qcpc {
 ///     static ParseRet parse(Input& in) {}
 /// };
 /// ```
-struct RuleBase {};
+template<typename T>
+concept RuleType = requires(T) {
+    { T::template parse<false, NO_RULE, MemoryInput>(std::declval<MemoryInput&>()) }
+    ->std::same_as<ParseRet>;
+};
 
 /// This macro is mainly for reducing refactoring workload during early development. So it is under
-/// `QCPC_DETAIL` and library users should not use it.
+/// `QCPC_DETAIL` and library users could not use it.
 #define QCPC_DETAIL_DEFINE_PARSE(input_param)                    \
     template<bool Silent, RuleTag Tag = NO_RULE, typename Input> \
     static ParseRet parse(Input& input_param)
-// TODO: Should tparam `Silent` have a default value?
-
-/// Concept to check if a type is a rule type.
-template<typename T>
-concept RuleType = std::derived_from<T, RuleBase>;
-// TODO: check interface
 
 namespace detail {
 
@@ -46,7 +45,7 @@ constexpr ParseRet match_failed(bool silent) {
 }  // namespace detail
 
 /// Match the beginning of input. Consume nothing.
-struct Boi: RuleBase {
+struct Boi {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         if constexpr (Silent) {
             return ParseRet(in.is_bof());
@@ -59,7 +58,7 @@ struct Boi: RuleBase {
 inline constexpr Boi boi{};
 
 /// Match the end of input. Consume nothing.
-struct Eoi: RuleBase {
+struct Eoi {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         if constexpr (Silent) {
             return ParseRet(in.is_eof());
@@ -72,7 +71,7 @@ struct Eoi: RuleBase {
 inline constexpr Eoi eoi{};
 
 /// Match the beginning of lines. Consume nothing.
-struct Bol: RuleBase {
+struct Bol {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         if constexpr (Silent) {
             return ParseRet(in.column() == 0);
@@ -85,7 +84,7 @@ struct Bol: RuleBase {
 inline constexpr Bol bol{};
 
 /// Match the end of lines. Consume "\r\n" or "\n".
-struct Eol: RuleBase {
+struct Eol {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         InputPos pos = in.pos();
         if (*in == '\n') {
@@ -113,7 +112,7 @@ inline constexpr Eol eol{};
 
 /// Match and consume given string.
 template<char... Cs>
-struct Str: RuleBase {
+struct Str {
     // Waiting for complete support of "Class Types in Non-Type Template Parameters" feature.
     // With this feature, we can pass a string literal as a template parameter.
 
@@ -143,9 +142,9 @@ struct Str: RuleBase {
 template<char... Cs>
 inline constexpr Str<Cs...> str{};
 
-// PEG and-predicate `&e`.
+/// PEG and-predicate `&e`.
 template<RuleType R>
-struct At: RuleBase {
+struct At {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         InputPos pos = in.pos();
         ParseRet ret = R::template parse<Silent>(in);
@@ -165,7 +164,7 @@ template<RuleType R>
 
 /// PEG not-predicate `!e`.
 template<RuleType R>
-struct NotAt: RuleBase {
+struct NotAt {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         InputPos pos = in.pos();
         ParseRet ret = R::template parse<Silent>(in);
@@ -185,7 +184,7 @@ template<RuleType R>
 
 /// PEG optional `e?`.
 template<RuleType R>
-struct Opt: RuleBase {
+struct Opt {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         if constexpr (Silent) {
             R::template parse<Silent>(in);
@@ -205,7 +204,7 @@ template<RuleType R>
 
 /// PEG zero-or-more `e*`.
 template<RuleType R>
-struct Star: RuleBase {
+struct Star {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         if constexpr (Silent) {
             while (R::template parse<Silent>(in).get_result()) {}
@@ -233,7 +232,7 @@ template<RuleType R>
 
 /// PEG one-or-more `e+`.
 template<RuleType R>
-struct Plus: RuleBase {
+struct Plus {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         if constexpr (Silent) {
             ParseRet first = R::template parse<Silent>(in);
@@ -263,7 +262,7 @@ template<RuleType R>
 
 /// Match (and consume) silently. The token it returns has no child.
 template<RuleType R>
-struct Silent: RuleBase {
+struct Silent {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         if constexpr (Silent) {
             return R::template parse<true>(in);
@@ -283,7 +282,7 @@ template<RuleType R>
 
 /// PEG sequence `e1 e2`.
 template<RuleType R, RuleType... Rs>
-struct Seq: RuleBase {
+struct Seq {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         InputPos pos = in.pos();
         if constexpr (Silent) {
@@ -295,7 +294,9 @@ struct Seq: RuleBase {
             Token::Ptr head = R::template parse<Silent>(in).get_ptr();
             if (!head) return ParseRet(nullptr);
             Token* tail = head.get();
-            for (auto f: {Rs::template parse<Silent, NO_RULE, Input>...}) {
+            // Type hint is necessary for GCC.
+            using ParseList = std::initializer_list<ParseRet (*)(Input&)>;
+            for (auto f: ParseList{Rs::template parse<Silent, NO_RULE, Input>...}) {
                 Token::Ptr ret = f(in).get_ptr();
                 if (!ret) {
                     in.jump(pos);
@@ -331,12 +332,14 @@ template<RuleType... R1s, RuleType... R2s>
 
 /// PEG ordered choice `e1 | e2`.
 template<RuleType... Rs>
-struct Sor: RuleBase {
+struct Sor {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         if constexpr (Silent) {
             return ParseRet((... || Rs::template parse<Silent>(in).get_result()));
         } else {
-            for (auto f: {Rs::template parse<Silent, Tag, Input>...}) {
+            // Type hint is necessary for GCC.
+            using ParseList = std::initializer_list<ParseRet (*)(Input&)>;
+            for (auto f: ParseList{Rs::template parse<Silent, Tag, Input>...}) {
                 ParseRet ret = f(in);
                 if (ret.success()) return ret;
             }
@@ -364,5 +367,7 @@ template<RuleType... R1s, RuleType... R2s>
 [[nodiscard]] constexpr Sor<R1s..., R2s...> operator|(Sor<R1s...>, Sor<R2s...>) {
     return {};
 }
+
+#undef QCPC_DETAIL_DEFINE_PARSE
 
 }  // namespace qcpc
