@@ -119,8 +119,8 @@ struct Token {
         return this->_pos.end;
     }
 
-    /// Return type hash of its rule.
-    [[nodiscard]] RuleTag rule() const noexcept {
+    /// Return tag of its rule.
+    [[nodiscard]] RuleTag tag() const noexcept {
         return this->_tag;
     }
 

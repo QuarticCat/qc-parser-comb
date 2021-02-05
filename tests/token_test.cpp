@@ -9,7 +9,7 @@ TEST(TokenTest, IterToken) {
     qcpc::Token root(pos, 114514);
     ASSERT_EQ(root.line(), 1);
     ASSERT_EQ(root.column(), 0);
-    ASSERT_EQ(root.rule(), 114514);
+    ASSERT_EQ(root.tag(), 114514);
     size_t count = 0;
     for (auto c: root) ASSERT_EQ(c, cstr[count++]);
     ASSERT_EQ(count, sizeof(cstr) - 1);
