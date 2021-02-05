@@ -39,20 +39,12 @@ namespace qcpc {
 ///
 /// Usage:
 /// ```
-/// auto tokens = parse<decltype(my_rule)>(my_input);
+/// auto tokens = parse(my_rule, my_input);
 /// ```
-template<RuleType T, typename Input>
-Token::Ptr parse(Input&& in) {
-    ParseRet ret = T::template parse<false>(in);
+template<RuleType R, typename Input>
+Token::Ptr parse(R, Input&& in) {
+    ParseRet ret = R::template parse<false>(in);
     return ret.get_ptr();
 }
-
-/// A macro simplifies the usage of `parse` function.
-///
-/// Usage:
-/// ```
-/// auto tokens = QCPC_PARSE(my_rule, my_input);
-/// ```
-#define QCPC_PARSE(rule_obj, input) (::qcpc::parse<decltype(rule_obj)>(input))
 
 }  // namespace qcpc
