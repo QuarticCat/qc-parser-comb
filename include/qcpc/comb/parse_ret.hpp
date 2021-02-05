@@ -15,9 +15,9 @@ namespace qcpc {
 struct ParseRet {
     // This class is something like the `DiscriminantPtr` in Facebook's folly project, but weaker
     // and more specialized. The key point is, currently on x86-64 platforms, the higher 16 bits of
-    // pointers are not used. We can use them as flags.
-
-    // TODO: Do we need to check the case that the higher 16 bits are all ones?
+    // pointers are not used. We can use them as flags. Besides, all major OS's are using the higher
+    // half addresses as kernel space. Thus, we do not need to care about cases that higher 16 bits
+    // are all ones.
 
     /// Construct from raw ptr. Then the `ParseRet` instance has the ownership of the object it
     /// points to. (non-silent cases)
