@@ -5,9 +5,9 @@
 
 namespace qcpc {
 
-/// A macro helps you define your own rule which has an unique `RuleTag`. All tokens it matches
-/// will have this hash tag. You should always define your rules by this macro. Note that this macro
-/// can not be used in scopes.
+/// A macro helps you define your own rule which has an unique `RuleTag`. You can get that tag by
+/// calling `rule.tag()`. The token it matches will have this tag. You should always define your
+/// rules by this macro. Note that this macro can not be used in scopes.
 ///
 /// Usage:
 /// ```
