@@ -1,4 +1,4 @@
-#include <typeinfo>
+#include <concepts>
 
 #include "gtest/gtest.h"
 #include "qcpc/qcpc.hpp"
@@ -181,9 +181,9 @@ QCPC_DEFINE_RULE(seq_rule3) = str_rule & str_rule & (str_rule & str_rule);
 QCPC_DEFINE_RULE(seq_rule4) = (str_rule & str_rule) & (str_rule & str_rule);
 
 TEST(CombTest, Rule_Seq) {
-    ASSERT_EQ(typeid(decltype(seq_rule1)::Rule), typeid(decltype(seq_rule2)::Rule));
-    ASSERT_EQ(typeid(decltype(seq_rule2)::Rule), typeid(decltype(seq_rule3)::Rule));
-    ASSERT_EQ(typeid(decltype(seq_rule3)::Rule), typeid(decltype(seq_rule4)::Rule));
+    ASSERT_TRUE((std::same_as<decltype(seq_rule1)::Rule, decltype(seq_rule2)::Rule>));
+    ASSERT_TRUE((std::same_as<decltype(seq_rule2)::Rule, decltype(seq_rule3)::Rule>));
+    ASSERT_TRUE((std::same_as<decltype(seq_rule3)::Rule, decltype(seq_rule4)::Rule>));
 
     StringInput in1("qcpc"
                     "qcpc"
@@ -225,9 +225,9 @@ QCPC_DEFINE_RULE(sor_rule3) = str<'a'> | str<'b'> | (str<'c'> | str<'d'>);
 QCPC_DEFINE_RULE(sor_rule4) = (str<'a'> | str<'b'>) | (str<'c'> | str<'d'>);
 
 TEST(CombTest, Rule_Sor) {
-    ASSERT_EQ(typeid(decltype(sor_rule1)::Rule), typeid(decltype(sor_rule2)::Rule));
-    ASSERT_EQ(typeid(decltype(sor_rule2)::Rule), typeid(decltype(sor_rule3)::Rule));
-    ASSERT_EQ(typeid(decltype(sor_rule3)::Rule), typeid(decltype(sor_rule4)::Rule));
+    ASSERT_TRUE((std::same_as<decltype(sor_rule1)::Rule, decltype(sor_rule2)::Rule>));
+    ASSERT_TRUE((std::same_as<decltype(sor_rule2)::Rule, decltype(sor_rule3)::Rule>));
+    ASSERT_TRUE((std::same_as<decltype(sor_rule3)::Rule, decltype(sor_rule4)::Rule>));
 
     StringInput in1("a");
     InputPos pos1 = in1.pos();
