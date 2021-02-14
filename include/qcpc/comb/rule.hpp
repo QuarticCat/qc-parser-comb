@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <initializer_list>
 #include <limits>
+#include <type_traits>
 #include <utility>
 
 #include "../input/input.hpp"
@@ -14,7 +15,7 @@ namespace qcpc {
 
 /// Concept to check if a type is a rule type.
 ///
-/// A rule type should be like:
+/// A rule type should be empty and has a parse function, like:
 /// ```
 /// struct RuleTemplate {
 ///     /// Parse and return matched token (or just bool). To see what should be returned, please
@@ -24,11 +25,13 @@ namespace qcpc {
 ///     static ParseRet parse(Input& in) {}
 /// };
 /// ```
+// clang-format off
 template<typename T>
-concept RuleType = requires(T) {
+concept RuleType = std::is_empty_v<T> && requires(T) {
     { T::template parse<false, NO_RULE, MemoryInput>(std::declval<MemoryInput&>()) }
-    ->std::same_as<ParseRet>;
+        -> std::same_as<ParseRet>;
 };
+// clang-format on
 
 /// This macro is mainly for reducing refactoring workload during early development. So it is under
 /// `QCPC_DETAIL` and library users could not use it.
