@@ -5,12 +5,9 @@
 #include <memory>
 
 #include "../input/input.hpp"
+#include "../comb/rule_tag.hpp"  // do not include comb.hpp in case circular include
 
 namespace qcpc {
-
-// They are defined here (instead of rule.hpp) to avoid circular include.
-using RuleTag = size_t;  // `RuleTag` should be an auto-incremental value
-inline constexpr RuleTag NO_RULE = std::numeric_limits<RuleTag>::max();
 
 struct TokenPos {
     const char* begin;

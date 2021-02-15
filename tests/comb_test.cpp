@@ -36,6 +36,13 @@ TEST(CombTest, ParseRet_Result_Fail) {
     ASSERT_EQ(res.get_result(), false);
 }
 
+TEST(CombTest, RuleTag) {
+    using qcpc::detail::get_tag;
+    ASSERT_NE(get_tag<int>(), get_tag<float>());
+    ASSERT_NE(get_tag<float>(), get_tag<char>());
+    ASSERT_NE(get_tag<char>(), get_tag<int>());
+}
+
 namespace rule_test {
 
 using namespace qcpc;

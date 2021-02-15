@@ -9,6 +9,7 @@
 
 #include "../input/input.hpp"
 #include "../token/token.hpp"
+#include "rule_tag.hpp"
 #include "parse_ret.hpp"
 
 namespace qcpc {

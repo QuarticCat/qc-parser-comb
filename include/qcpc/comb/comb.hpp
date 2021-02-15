@@ -2,6 +2,7 @@
 
 #include "parse_ret.hpp"
 #include "rule.hpp"
+#include "rule_tag.hpp"
 
 namespace qcpc {
 
@@ -13,21 +14,22 @@ namespace qcpc {
 /// ```
 /// QCPC_DEFINE_RULE(my_rule) = rule_expression;
 /// ```
-#define QCPC_DEFINE_RULE(name)                                                   \
-    template<::qcpc::RuleType R>                                                 \
-    struct GeneratedRule_##name {                                                \
-        using Rule = R;                                                          \
-                                                                                 \
-        static constexpr size_t tag = __COUNTER__;                               \
-                                                                                 \
-        /* Can not mark explicit here, it will prevent deduction. */             \
-        constexpr GeneratedRule_##name(R) noexcept {}                            \
-                                                                                 \
-        template<bool Silent, ::qcpc::RuleTag = ::qcpc::NO_RULE, typename Input> \
-        static ::qcpc::ParseRet parse(Input& in) {                               \
-            return R::template parse<Silent, tag>(in);                           \
-        }                                                                        \
-    };                                                                           \
+#define QCPC_DEFINE_RULE(name)                                                         \
+    template<::qcpc::RuleType R>                                                       \
+    struct GeneratedRule_##name {                                                      \
+        using Rule = R;                                                                \
+                                                                                       \
+        /* Can not use `__COUNTER__` here, it may violate ODR. */                      \
+        static constexpr size_t tag = ::qcpc::detail::get_tag<GeneratedRule_##name>(); \
+                                                                                       \
+        /* Can not mark explicit here, it will prevent deduction. */                   \
+        constexpr GeneratedRule_##name(R) noexcept {}                                  \
+                                                                                       \
+        template<bool Silent, ::qcpc::RuleTag = ::qcpc::NO_RULE, typename Input>       \
+        static ::qcpc::ParseRet parse(Input& in) {                                     \
+            return R::template parse<Silent, tag>(in);                                 \
+        }                                                                              \
+    };                                                                                 \
     inline constexpr GeneratedRule_##name name
 
 /// Parse and return token tree.
