@@ -106,6 +106,18 @@ TEST(CombTest, Rule_Str) {
     ASSERT_EQ(in2.current(), in2.begin());
 }
 
+QCPC_DEFINE_RULE(range_rule) = range<'a', 'z', 'A', 'Z'>;
+
+TEST(CombTest, Rule_Range) {
+    StringInput in1("a");
+    ASSERT_TRUE(parse(range_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("-");
+    ASSERT_FALSE(parse(range_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
 QCPC_DEFINE_RULE(at_rule) = &str_rule;
 
 TEST(CombTest, Rule_At) {

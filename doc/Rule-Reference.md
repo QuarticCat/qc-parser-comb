@@ -22,6 +22,11 @@ struct `Eol` / variable `eol`
 
 struct `Str<char...>` / variable `str<char...>`
 - Match and consume given string.
+- `str<'a', 'b', 'c', 'd'>` means `"abcd"` in PEG.
+
+struct `Range<char...>` / variable `range<char...>`
+- Match and consume a character in given ASCII range(s).
+- `range<'a', 'z', 'A', 'Z'>` means `[a-zA-Z]` in PEG.
 
 ## Combinators
 

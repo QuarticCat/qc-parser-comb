@@ -9,8 +9,8 @@
 
 #include "../input/input.hpp"
 #include "../token/token.hpp"
-#include "rule_tag.hpp"
 #include "parse_ret.hpp"
+#include "rule_tag.hpp"
 
 namespace qcpc {
 
@@ -28,9 +28,8 @@ namespace qcpc {
 /// ```
 // clang-format off
 template<typename T>
-concept RuleType = std::is_empty_v<T> && requires(T) {
-    { T::template parse<false, NO_RULE, MemoryInput>(std::declval<MemoryInput&>()) }
-        -> std::same_as<ParseRet>;
+concept RuleType = std::is_empty_v<T> && requires(T, MemoryInput& in) {
+    { T::template parse<false, NO_RULE, MemoryInput>(in) } -> std::same_as<ParseRet>;
 };
 // clang-format on
 
@@ -146,6 +145,33 @@ struct Str {
 template<char... Cs>
 inline constexpr Str<Cs...> str{};
 
+/// Match and consume a character in given ASCII range(s).
+template<char... Cs>
+struct Range {
+    static_assert(sizeof...(Cs) % 2 == 0, "Param number should be even.");
+    // Should we check the validity of ranges?
+
+    QCPC_DETAIL_DEFINE_PARSE(in) {
+        constexpr char cs[] = {Cs...};
+        for (size_t i = 0; i < sizeof...(Cs); i += 2) {
+            if (cs[i] <= *in && *in <= cs[i + 1]) {
+                if constexpr (Silent) {
+                    ++in;
+                    return ParseRet(true);
+                } else {
+                    InputPos pos = in.pos();
+                    ++in;
+                    return ParseRet(new Token({pos}, Tag));
+                }
+            }
+        }
+        return detail::match_failed(Silent);
+    }
+};
+
+template<char... Cs>
+inline constexpr Range<Cs...> range{};
+
 /// PEG and-predicate `&e`.
 template<RuleType R>
 struct At {
@@ -153,11 +179,10 @@ struct At {
         InputPos pos = in.pos();
         ParseRet ret = R::template parse<Silent>(in);
         in.jump(pos);
-        if constexpr (Silent) {
+        if constexpr (Silent)
             return ParseRet(ret.success());
-        } else {
+        else
             return ret.success() ? ParseRet(new Token({pos}, Tag)) : ParseRet(nullptr);
-        }
     }
 };
 
@@ -173,11 +198,10 @@ struct NotAt {
         InputPos pos = in.pos();
         ParseRet ret = R::template parse<Silent>(in);
         in.jump(pos);
-        if constexpr (Silent) {
+        if constexpr (Silent)
             return ParseRet(!ret.success());
-        } else {
+        else
             return ret.success() ? ParseRet(nullptr) : ParseRet(new Token({pos}, Tag));
-        }
     }
 };
 
