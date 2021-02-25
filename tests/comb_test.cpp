@@ -94,6 +94,18 @@ TEST(CombTest, Rule_Eol) {
     ASSERT_EQ(in3.current(), in3.begin());
 }
 
+QCPC_DEFINE_RULE(one_rule) = one<'x'>;
+
+TEST(CombTest, Rule_One) {
+    StringInput in1("x");
+    ASSERT_TRUE(parse(one_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("y");
+    ASSERT_FALSE(parse(one_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
 QCPC_DEFINE_RULE(str_rule) = str<'q', 'c', 'p', 'c'>;
 
 TEST(CombTest, Rule_Str) {

@@ -20,6 +20,9 @@ struct `Eol` / variable `eol`
   
 ## ASCII Rules
 
+struct `One<char>` / variable `one<char>`
+- Match and consume a given character.
+
 struct `Str<char...>` / variable `str<char...>`
 - Match and consume given string.
 - `str<'a', 'b', 'c', 'd'>` means `"abcd"` in PEG.

@@ -41,8 +41,24 @@ concept RuleType = std::is_empty_v<T> && requires(T, MemoryInput& in) {
 
 namespace detail {
 
-constexpr ParseRet match_failed(bool silent) {
-    return silent ? ParseRet(false) : ParseRet(nullptr);
+template<bool Silent>
+constexpr ParseRet match_failed() {
+    if constexpr (Silent)
+        return ParseRet(false);
+    else
+        return ParseRet(nullptr);
+}
+
+template<bool Silent, RuleTag Tag, typename Input>
+ParseRet consume_one(Input& in) {
+    if constexpr (Silent) {
+        ++in;
+        return ParseRet(true);
+    } else {
+        InputPos pos = in.pos();
+        ++in;
+        return ParseRet(new Token({pos}, Tag));
+    }
 }
 
 }  // namespace detail
@@ -101,7 +117,7 @@ struct Eol {
             }
             in.jump(pos);
         }
-        return detail::match_failed(Silent);
+        return detail::match_failed<Silent>();
     success:
         if constexpr (Silent) {
             return ParseRet(true);
@@ -112,6 +128,17 @@ struct Eol {
 };
 
 inline constexpr Eol eol{};
+
+/// Match and consume a given character.
+template<char C>
+struct One {
+    QCPC_DETAIL_DEFINE_PARSE(in) {
+        return *in == C ? detail::consume_one<Silent, Tag>(in) : detail::match_failed<Silent>();
+    }
+};
+
+template<char C>
+inline constexpr One<C> one{};
 
 /// Match and consume given string.
 template<char... Cs>
@@ -126,12 +153,12 @@ struct Str {
             for (char c: {Cs...}) {
                 if (c != *in) {
                     in.jump(pos);
-                    return detail::match_failed(Silent);
+                    return detail::match_failed<Silent>();
                 }
                 ++in;
             }
         } else {
-            return detail::match_failed(Silent);
+            return detail::match_failed<Silent>();
         }
 
         if constexpr (Silent) {
@@ -154,18 +181,9 @@ struct Range {
     QCPC_DETAIL_DEFINE_PARSE(in) {
         constexpr char cs[] = {Cs...};
         for (size_t i = 0; i < sizeof...(Cs); i += 2) {
-            if (cs[i] <= *in && *in <= cs[i + 1]) {
-                if constexpr (Silent) {
-                    ++in;
-                    return ParseRet(true);
-                } else {
-                    InputPos pos = in.pos();
-                    ++in;
-                    return ParseRet(new Token({pos}, Tag));
-                }
-            }
+            if (cs[i] <= *in && *in <= cs[i + 1]) return detail::consume_one<Silent, Tag>(in);
         }
-        return detail::match_failed(Silent);
+        return detail::match_failed<Silent>();
     }
 };
 
