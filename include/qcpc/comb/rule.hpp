@@ -190,6 +190,27 @@ struct Range {
 template<char... Cs>
 inline constexpr Range<Cs...> range{};
 
+/// Match and consume alphabetic letters. Equivalent to `[a-zA-Z]+`.
+struct Alpha {
+    // TODO
+};
+
+inline constexpr Alpha alpha{};
+
+/// Match and consume numbers. Equivalent to `[0-9]+`.
+struct Num {
+    // TODO
+};
+
+inline constexpr Num num{};
+
+/// Match and consume alphabetic letters and numbers. Equivalent to `[a-zA-Z0-9]+`.
+struct AlNum {
+    // TODO
+};
+
+inline constexpr AlNum alnum{};
+
 /// PEG and-predicate `&e`.
 template<RuleType R>
 struct At {
