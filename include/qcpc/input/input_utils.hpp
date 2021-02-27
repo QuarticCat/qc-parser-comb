@@ -29,11 +29,11 @@ struct InputCRTP {
         return *this->_current;
     }
 
-    [[nodiscard]] bool is_bof() const noexcept {
+    [[nodiscard]] bool is_boi() const noexcept {
         return this->_current == this->_begin;
     }
 
-    [[nodiscard]] bool is_eof() const noexcept {
+    [[nodiscard]] bool is_eoi() const noexcept {
         return this->_current == this->_end;
     }
 
