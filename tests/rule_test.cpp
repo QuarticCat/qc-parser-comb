@@ -88,6 +88,54 @@ TEST(RuleTest, Range) {
     ASSERT_EQ(in2.current(), in2.begin());
 }
 
+QCPC_DECL_DEF(alpha_rule) = alpha;
+
+TEST(RuleTest, Alpha) {
+    StringInput in1("abc");
+    ASSERT_TRUE(parse(alpha_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("---");
+    ASSERT_FALSE(parse(alpha_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+
+    StringInput in3("");
+    ASSERT_FALSE(parse(alpha_rule, in3));
+    ASSERT_EQ(in3.current(), in3.begin());
+}
+
+QCPC_DECL_DEF(num_rule) = num;
+
+TEST(RuleTest, Num) {
+    StringInput in1("123");
+    ASSERT_TRUE(parse(num_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("---");
+    ASSERT_FALSE(parse(num_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+
+    StringInput in3("");
+    ASSERT_FALSE(parse(num_rule, in3));
+    ASSERT_EQ(in3.current(), in3.begin());
+}
+
+QCPC_DECL_DEF(alnum_rule) = alnum;
+
+TEST(RuleTest, AlNum) {
+    StringInput in1("1b3");
+    ASSERT_TRUE(parse(alnum_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("---");
+    ASSERT_FALSE(parse(alnum_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+
+    StringInput in3("");
+    ASSERT_FALSE(parse(alnum_rule, in3));
+    ASSERT_EQ(in3.current(), in3.begin());
+}
+
 QCPC_DECL_DEF(at_rule) = &str_rule;
 
 TEST(RuleTest, At) {

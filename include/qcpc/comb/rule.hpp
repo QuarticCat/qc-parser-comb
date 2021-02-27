@@ -141,26 +141,47 @@ struct Range {
 template<char... Cs>
 inline constexpr Range<Cs...> range{};
 
-// /// Match and consume alphabetic letters. Equivalent to `[a-zA-Z]+`.
-// struct Alpha {
-//     // TODO
-// };
-//
-// inline constexpr Alpha alpha{};
-//
-// /// Match and consume numbers. Equivalent to `[0-9]+`.
-// struct Num {
-//     // TODO
-// };
-//
-// inline constexpr Num num{};
-//
-// /// Match and consume alphabetic letters and numbers. Equivalent to `[a-zA-Z0-9]+`.
-// struct AlNum {
-//     // TODO
-// };
-//
-// inline constexpr AlNum alnum{};
+namespace detail {
+
+template<InputType Input>
+Token::Ptr light_plus(Input& in, bool (*pred)(char)) {
+    if (!pred(*in)) return nullptr;
+    auto pos = in.pos();
+    do { ++in; } while (pred(*in));
+    return MAKE_TOKEN({pos, in.current()});
+}
+
+}  // namespace detail
+
+/// Match and consume alphabetic letters. Equivalent to `[a-zA-Z]+`.
+struct Alpha {
+    DEFINE_PARSE(in) {
+        return detail::light_plus(
+            in, [](char c) { return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z'); });
+    }
+};
+
+inline constexpr Alpha alpha{};
+
+/// Match and consume numbers. Equivalent to `[0-9]+`.
+struct Num {
+    DEFINE_PARSE(in) {
+        return detail::light_plus(in, [](char c) { return '0' <= c && c <= '9'; });
+    }
+};
+
+inline constexpr Num num{};
+
+/// Match and consume alphabetic letters and numbers. Equivalent to `[a-zA-Z0-9]+`.
+struct AlNum {
+    DEFINE_PARSE(in) {
+        return detail::light_plus(in, [](char c) {
+            return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9');
+        });
+    }
+};
+
+inline constexpr AlNum alnum{};
 
 /// PEG and-predicate `&e`.
 template<RuleType R>
