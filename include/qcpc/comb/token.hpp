@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "../input/input.hpp"
-#include "../comb/rule_tag.hpp"  // do not include comb.hpp in case circular include
+#include "rule_tag.hpp"  // do not include comb.hpp in case circular include
 
 namespace qcpc {
 
@@ -26,6 +26,14 @@ struct TokenPos {
     TokenPos& operator=(const TokenPos&) = default;
     TokenPos& operator=(TokenPos&&) = default;
 };
+
+struct Token;
+
+namespace detail {
+
+inline void set_tag(Token& token, RuleTag tag);
+
+}  // namespace detail
 
 struct Token {
     struct Iter {
@@ -71,10 +79,9 @@ struct Token {
 
     using Ptr = std::unique_ptr<Token>;  // save your keyboard and eyes :)
 
-    Token(TokenPos pos, RuleTag tag): _pos(pos), _tag(tag) {}
+    explicit Token(TokenPos pos): _pos(pos) {}
 
-    Token(Token::Ptr children, TokenPos pos, RuleTag tag)
-        : _head_child(std::move(children)), _pos(pos), _tag(tag) {}
+    Token(Token::Ptr children, TokenPos pos): _head_child(std::move(children)), _pos(pos) {}
 
     Token(const Token&) = delete;
     Token(Token&&) = default;
@@ -162,7 +169,18 @@ struct Token {
     Ptr _head_child = nullptr;
     Ptr _next = nullptr;
     TokenPos _pos;
-    RuleTag _tag;
+    RuleTag _tag = NO_RULE;
+
+    friend void detail::set_tag(Token& token, RuleTag tag);
 };
+
+inline void detail::set_tag(Token& token, RuleTag tag) {
+    token._tag = tag;
+}
+
+template<class... Args>
+inline Token::Ptr make_token(Args&&... args) {
+    return std::make_unique<Token>(std::forward<Args>(args)...);
+}
 
 }  // namespace qcpc
