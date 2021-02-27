@@ -178,9 +178,4 @@ inline void detail::set_tag(Token& token, RuleTag tag) {
     token._tag = tag;
 }
 
-template<class... Args>
-inline Token::Ptr make_token(Args&&... args) {
-    return std::make_unique<Token>(std::forward<Args>(args)...);
-}
-
 }  // namespace qcpc

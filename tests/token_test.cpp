@@ -16,9 +16,9 @@ TEST(TokenTest, IterToken) {
 TEST(TokenTest, PushIterPop) {
     qcpc::TokenPos pos({});
     qcpc::Token root(pos);
-    root.push_front(qcpc::make_token(pos));
-    root.push_front(qcpc::make_token(pos));
-    root.push_front(qcpc::make_token(pos));
+    root.push_front(std::make_unique<qcpc::Token>(pos));
+    root.push_front(std::make_unique<qcpc::Token>(pos));
+    root.push_front(std::make_unique<qcpc::Token>(pos));
     size_t count = 0;
     for ([[maybe_unused]] auto&& _: root.iter_children()) ++count;
     ASSERT_EQ(count, 3);

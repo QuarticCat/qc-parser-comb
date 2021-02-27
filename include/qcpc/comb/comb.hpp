@@ -1,47 +1,57 @@
 #pragma once
 
-#include "parse_ret.hpp"
+#include <type_traits>
+
 #include "rule.hpp"
 #include "rule_tag.hpp"
+#include "token.hpp"
 
 namespace qcpc {
 
-/// A macro helps you define your own rule which has an unique `RuleTag`. You can get that tag by
-/// calling `rule.tag`. The token it matches will have this tag. You should always define your rules
-/// by this macro. Note that this macro can not be used in scopes.
-///
-/// Usage:
-/// ```
-/// QCPC_DEFINE_RULE(my_rule) = rule_expression;
-/// ```
-#define QCPC_DEFINE_RULE(name)                                                         \
-    template<::qcpc::RuleType R>                                                       \
-    struct GeneratedRule_##name {                                                      \
-        using Rule = R;                                                                \
-                                                                                       \
-        /* Can not use `__COUNTER__` here, it may violate ODR. */                      \
-        static constexpr size_t tag = ::qcpc::detail::get_tag<GeneratedRule_##name>(); \
-                                                                                       \
-        /* Can not mark explicit here, it will prevent deduction. */                   \
-        constexpr GeneratedRule_##name(R) noexcept {}                                  \
-                                                                                       \
-        template<bool Silent, ::qcpc::RuleTag = ::qcpc::NO_RULE, typename Input>       \
-        static ::qcpc::ParseRet parse(Input& in) noexcept {                            \
-            return R::template parse<Silent, tag>(in);                                 \
-        }                                                                              \
-    };                                                                                 \
-    inline constexpr GeneratedRule_##name name
+namespace detail {
 
-/// Parse and return token tree.
-///
-/// Usage:
-/// ```
-/// auto tokens = parse(my_rule, my_input);
-/// ```
-template<RuleType R, typename Input>
-Token::Ptr parse(R, Input&& in) {
-    ParseRet ret = R::template parse<false>(in);
-    return ret.get_ptr();
+template<class>
+inline constexpr int rule_set = 0;
+
+}  // namespace detail
+
+#define QCPC_DETAIL_MANGL(name) QCPC_GeneratedRule_##name
+
+#define QCPC_DECL(name)                                                               \
+    struct QCPC_DETAIL_MANGL(name) {                                                  \
+        /* Using `__COUNTER__` here may violate ODR. */                               \
+        static constexpr ::qcpc::RuleTag tag =                                        \
+            ::qcpc::detail::get_tag<const QCPC_DETAIL_MANGL(name)>();                 \
+                                                                                      \
+        /* The use of the inline variable here is IFNDR. */                           \
+        template<::qcpc::InputType Input, class Lazy = const QCPC_DETAIL_MANGL(name)> \
+        friend ::qcpc::Token::Ptr parse_detail(Input& in, QCPC_DETAIL_MANGL(name)) {  \
+            return ::qcpc::detail::rule_set<Lazy>.parse(in);                          \
+        }                                                                             \
+                                                                                      \
+        template<::qcpc::InputType Input>                                             \
+        static ::qcpc::Token::Ptr parse(Input& in) noexcept {                         \
+            auto ptr = parse_detail(in, QCPC_DETAIL_MANGL(name){});                   \
+            if (ptr) ::qcpc::detail::set_tag(*ptr, tag);                              \
+            return ptr;                                                               \
+        }                                                                             \
+    };                                                                                \
+                                                                                      \
+    inline constexpr QCPC_DETAIL_MANGL(name) name {}
+
+/// Define rule. The name must be declared by `QCPC_DECL` before.
+#define QCPC_DEF(name) \
+    template<>         \
+    inline constexpr auto ::qcpc::detail::rule_set<const QCPC_DETAIL_MANGL(name)>
+
+/// A convenient macro that combines `QCPC_DECL` and `QCPC_DEF`.
+#define QCPC_DECL_DEF(name) \
+    QCPC_DECL(name);        \
+    QCPC_DEF(name)
+
+template<RuleType Rule, class Input>
+Token::Ptr parse(Rule, Input&& in) requires InputType<std::remove_reference_t<Input>> {
+    return Rule::parse(in);
 }
 
 }  // namespace qcpc
