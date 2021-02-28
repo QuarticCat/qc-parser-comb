@@ -61,12 +61,22 @@ struct Token {
             return *this;
         }
 
+        Iter operator++(int) noexcept {
+            Iter before = *this;
+            this->_node = this->_node->_next.get();
+            return before;
+        }
+
         [[nodiscard]] bool operator!=(Iter rhs) const noexcept {
             return this->_node != rhs._node;
         }
 
         [[nodiscard]] Token& operator*() const noexcept {
             return *this->_node;
+        }
+
+        [[nodiscard]] Token* operator->() const noexcept {
+            return this->_node;
         }
 
         [[nodiscard]] operator bool() const noexcept {
@@ -98,10 +108,10 @@ struct Token {
         return this->_next.get();
     }
 
-    // /// Return the position of this token.
-    // [[nodiscard]] TokenPos pos() const noexcept {
-    //     return this->_pos;
-    // }
+    /// Return the position of this token.
+    [[nodiscard]] TokenPos pos() const noexcept {
+        return this->_pos;
+    }
 
     /// Return line number of the first character.
     [[nodiscard]] size_t line() const noexcept {
