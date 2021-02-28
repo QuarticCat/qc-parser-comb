@@ -20,9 +20,9 @@ TEST(TokenTest, PushIterPop) {
     root.push_front(std::make_unique<qcpc::Token>(pos));
     root.push_front(std::make_unique<qcpc::Token>(pos));
     size_t count = 0;
-    for ([[maybe_unused]] auto&& _: root.iter_children()) ++count;
+    for ([[maybe_unused]] auto&& _: root.iter()) ++count;
     ASSERT_EQ(count, 3);
     for (size_t i = 0; i < count; ++i) root.pop_front();
-    ASSERT_EQ(root.head_child(), nullptr);
+    ASSERT_EQ(root.head(), nullptr);
     ASSERT_EQ(root.next(), nullptr);
 }

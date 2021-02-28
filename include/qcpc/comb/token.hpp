@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <string_view>
 
 #include "../input/input.hpp"
 #include "rule_tag.hpp"  // do not include comb.hpp in case circular include
@@ -26,14 +27,6 @@ struct TokenPos {
     TokenPos& operator=(const TokenPos&) = default;
     TokenPos& operator=(TokenPos&&) = default;
 };
-
-struct Token;
-
-namespace detail {
-
-inline void set_tag(Token& token, RuleTag tag);
-
-}  // namespace detail
 
 struct Token {
     struct Iter {
@@ -67,6 +60,10 @@ struct Token {
             return before;
         }
 
+        operator Token*() noexcept {
+            return this->_node;
+        }
+
         [[nodiscard]] bool operator!=(Iter rhs) const noexcept {
             return this->_node != rhs._node;
         }
@@ -79,7 +76,7 @@ struct Token {
             return this->_node;
         }
 
-        [[nodiscard]] operator bool() const noexcept {
+        [[nodiscard]] explicit operator bool() const noexcept {
             return this->_node != nullptr;
         }
 
@@ -89,18 +86,19 @@ struct Token {
 
     using Ptr = std::unique_ptr<Token>;  // save your keyboard and eyes :)
 
-    explicit Token(TokenPos pos): _pos(pos) {}
+    explicit Token(TokenPos pos, RuleTag tag = NO_RULE): _pos(pos), _tag(tag) {}
 
-    Token(Token::Ptr children, TokenPos pos): _head_child(std::move(children)), _pos(pos) {}
+    Token(Token::Ptr children, TokenPos pos, RuleTag tag = NO_RULE)
+        : _head(std::move(children)), _pos(pos), _tag(tag) {}
 
     Token(const Token&) = delete;
     Token(Token&&) = default;
     Token& operator=(const Token&) = delete;
     Token& operator=(Token&&) = default;
 
-    /// Return the pointer to the head child. Caller does not have its ownership.
-    [[nodiscard]] Token* head_child() const noexcept {
-        return this->_head_child.get();
+    /// Return the pointer to the head of the children list. Caller does not have its ownership.
+    [[nodiscard]] Token* head() const noexcept {
+        return this->_head.get();
     }
 
     /// Return the pointer to the next. Caller does not have its ownership.
@@ -133,6 +131,10 @@ struct Token {
         return this->_pos.end;
     }
 
+    [[nodiscard]] std::string_view view() const noexcept {
+        return {this->begin(), this->end()};
+    }
+
     /// Return tag of its rule.
     [[nodiscard]] RuleTag tag() const noexcept {
         return this->_tag;
@@ -140,19 +142,19 @@ struct Token {
 
     /// Return whether it has children or not.
     [[nodiscard]] bool is_empty() const noexcept {
-        return this->_head_child == nullptr;
+        return this->_head == nullptr;
     }
 
     /// Push a node to the front of the children list.
     void push_front(Ptr child) noexcept {
-        child->_next = std::move(this->_head_child);
-        this->_head_child = std::move(child);
+        child->_next = std::move(this->_head);
+        this->_head = std::move(child);
     }
 
     /// Pop a node from the front of the children list. If there is no child, return null pointer.
     Ptr pop_front() noexcept {
-        Ptr ret = std::move(this->_head_child);
-        this->_head_child = std::move(ret->_next);
+        Ptr ret = std::move(this->_head);
+        this->_head = std::move(ret->_next);
         return ret;
     }
 
@@ -165,27 +167,21 @@ struct Token {
     ///
     /// Usage:
     /// ```
-    /// for (auto&& child: parent.iter_children()) {
+    /// for (auto&& child: parent.iter()) {
     ///     // do something
     /// }
     /// ```
-    [[nodiscard]] Iter iter_children() const noexcept {
-        return Iter(this->head_child());
+    [[nodiscard]] Iter iter() const noexcept {
+        return Iter(this->head());
     }
 
   private:
     // M-ary tree to binary tree:
     // Children are stored by a singly linked list.
-    Ptr _head_child = nullptr;
+    Ptr _head = nullptr;
     Ptr _next = nullptr;
     TokenPos _pos;
-    RuleTag _tag = NO_RULE;
-
-    friend void detail::set_tag(Token& token, RuleTag tag);
+    RuleTag _tag;
 };
-
-inline void detail::set_tag(Token& token, RuleTag tag) {
-    token._tag = tag;
-}
 
 }  // namespace qcpc

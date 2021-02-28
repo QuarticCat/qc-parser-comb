@@ -29,6 +29,10 @@ concept RuleType = std::is_empty_v<T> && requires(MemoryInput in) {
 // Template function `make_token(Args&&...)` may prevent some type deductions.
 #define MAKE_TOKEN(...) Token::Ptr(new Token(__VA_ARGS__))
 
+// ==================
+// || Atomic Rules ||
+// ==================
+
 /// Match the beginning of input. Consume nothing.
 struct Boi {
     DEFINE_PARSE(in) {
@@ -182,6 +186,10 @@ struct AlNum {
 };
 
 inline constexpr AlNum alnum{};
+
+// =================
+// || Combinators ||
+// =================
 
 /// PEG and-predicate `&e`.
 template<RuleType R>
