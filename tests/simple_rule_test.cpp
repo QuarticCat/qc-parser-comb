@@ -7,7 +7,7 @@ using namespace qcpc;
 
 QCPC_DECL_DEF(boi_rule) = boi;
 
-TEST(RuleTest, Boi) {
+TEST(SimpleRuleTest, Boi) {
     StringInput in("1");
     ASSERT_TRUE(parse(boi_rule, in));
     ++in;
@@ -16,7 +16,7 @@ TEST(RuleTest, Boi) {
 
 QCPC_DECL_DEF(eoi_rule) = eoi;
 
-TEST(RuleTest, Eoi) {
+TEST(SimpleRuleTest, Eoi) {
     StringInput in("1");
     ASSERT_FALSE(parse(eoi_rule, in));
     ++in;
@@ -25,7 +25,7 @@ TEST(RuleTest, Eoi) {
 
 QCPC_DECL_DEF(bol_rule) = bol;
 
-TEST(RuleTest, Bol) {
+TEST(SimpleRuleTest, Bol) {
     StringInput in("1\n2");
     ASSERT_TRUE(parse(bol_rule, in));
     ++in;
@@ -38,7 +38,7 @@ TEST(RuleTest, Bol) {
 
 QCPC_DECL_DEF(eol_rule) = eol;
 
-TEST(RuleTest, Eol) {
+TEST(SimpleRuleTest, Eol) {
     StringInput in1("\r\n");
     ASSERT_TRUE(parse(eol_rule, in1));
     ASSERT_EQ(in1.current(), in1.end());
@@ -54,7 +54,7 @@ TEST(RuleTest, Eol) {
 
 QCPC_DECL_DEF(one_rule) = one<'x'>;
 
-TEST(RuleTest, One) {
+TEST(SimpleRuleTest, One) {
     StringInput in1("x");
     ASSERT_TRUE(parse(one_rule, in1));
     ASSERT_EQ(in1.current(), in1.end());
@@ -66,7 +66,7 @@ TEST(RuleTest, One) {
 
 QCPC_DECL_DEF(str_rule) = str<'q', 'c', 'p', 'c'>;
 
-TEST(RuleTest, Str) {
+TEST(SimpleRuleTest, Str) {
     StringInput in1("qcpc");
     ASSERT_TRUE(parse(str_rule, in1));
     ASSERT_EQ(in1.current(), in1.end());
@@ -78,7 +78,7 @@ TEST(RuleTest, Str) {
 
 QCPC_DECL_DEF(range_rule) = range<'a', 'z', 'A', 'Z'>;
 
-TEST(RuleTest, Range) {
+TEST(SimpleRuleTest, Range) {
     StringInput in1("a");
     ASSERT_TRUE(parse(range_rule, in1));
     ASSERT_EQ(in1.current(), in1.end());
@@ -90,7 +90,7 @@ TEST(RuleTest, Range) {
 
 QCPC_DECL_DEF(alpha_rule) = alpha;
 
-TEST(RuleTest, Alpha) {
+TEST(SimpleRuleTest, Alpha) {
     StringInput in1("abc");
     ASSERT_TRUE(parse(alpha_rule, in1));
     ASSERT_EQ(in1.current(), in1.end());
@@ -106,7 +106,7 @@ TEST(RuleTest, Alpha) {
 
 QCPC_DECL_DEF(num_rule) = num;
 
-TEST(RuleTest, Num) {
+TEST(SimpleRuleTest, Num) {
     StringInput in1("123");
     ASSERT_TRUE(parse(num_rule, in1));
     ASSERT_EQ(in1.current(), in1.end());
@@ -122,7 +122,7 @@ TEST(RuleTest, Num) {
 
 QCPC_DECL_DEF(alnum_rule) = alnum;
 
-TEST(RuleTest, AlNum) {
+TEST(SimpleRuleTest, AlNum) {
     StringInput in1("1b3");
     ASSERT_TRUE(parse(alnum_rule, in1));
     ASSERT_EQ(in1.current(), in1.end());
@@ -138,7 +138,7 @@ TEST(RuleTest, AlNum) {
 
 QCPC_DECL_DEF(at_rule) = &str_rule;
 
-TEST(RuleTest, At) {
+TEST(SimpleRuleTest, At) {
     StringInput in1("qcpc");
     ASSERT_TRUE(parse(at_rule, in1));
     ASSERT_EQ(in1.current(), in1.begin());
@@ -150,7 +150,7 @@ TEST(RuleTest, At) {
 
 QCPC_DECL_DEF(notat_rule) = !str_rule;
 
-TEST(RuleTest, NotAt) {
+TEST(SimpleRuleTest, NotAt) {
     StringInput in1("qcpc");
     ASSERT_FALSE(parse(notat_rule, in1));
     ASSERT_EQ(in1.current(), in1.begin());
@@ -162,7 +162,7 @@ TEST(RuleTest, NotAt) {
 
 QCPC_DECL_DEF(opt_rule) = -str_rule;
 
-TEST(RuleTest, Opt) {
+TEST(SimpleRuleTest, Opt) {
     StringInput in1("qcpc");
     ASSERT_TRUE(parse(opt_rule, in1));
     ASSERT_EQ(in1.current(), in1.end());
@@ -174,7 +174,7 @@ TEST(RuleTest, Opt) {
 
 QCPC_DECL_DEF(star_rule) = *str_rule;
 
-TEST(RuleTest, Star) {
+TEST(SimpleRuleTest, Star) {
     StringInput in1("qcpc"
                     "qcpc");
     ASSERT_TRUE(parse(star_rule, in1));
@@ -187,7 +187,7 @@ TEST(RuleTest, Star) {
 
 QCPC_DECL_DEF(plus_rule) = +str_rule;
 
-TEST(RuleTest, Plus) {
+TEST(SimpleRuleTest, Plus) {
     StringInput in1("qcpc"
                     "qcpc");
     ASSERT_TRUE(parse(plus_rule, in1));
@@ -207,7 +207,7 @@ QCPC_DECL_DEF(seq_rule2) = (str_rule & str_rule) & str_rule & str_rule;
 QCPC_DECL_DEF(seq_rule3) = str_rule & str_rule & (str_rule & str_rule);
 QCPC_DECL_DEF(seq_rule4) = (str_rule & str_rule) & (str_rule & str_rule);
 
-TEST(RuleTest, Seq) {
+TEST(SimpleRuleTest, Seq) {
     ASSERT_TRUE(COMPARE_RULE(seq_rule1, seq_rule2));
     ASSERT_TRUE(COMPARE_RULE(seq_rule2, seq_rule3));
     ASSERT_TRUE(COMPARE_RULE(seq_rule3, seq_rule4));
@@ -245,7 +245,7 @@ QCPC_DECL_DEF(sor_rule2) = (str<'a'> | str<'b'>) | str<'c'> | str<'d'>;
 QCPC_DECL_DEF(sor_rule3) = str<'a'> | str<'b'> | (str<'c'> | str<'d'>);
 QCPC_DECL_DEF(sor_rule4) = (str<'a'> | str<'b'>) | (str<'c'> | str<'d'>);
 
-TEST(RuleTest, Sor) {
+TEST(SimpleRuleTest, Sor) {
     ASSERT_TRUE(COMPARE_RULE(sor_rule1, sor_rule2));
     ASSERT_TRUE(COMPARE_RULE(sor_rule2, sor_rule3));
     ASSERT_TRUE(COMPARE_RULE(sor_rule3, sor_rule4));

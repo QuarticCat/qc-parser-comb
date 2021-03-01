@@ -1,9 +1,10 @@
 #pragma once
 
+#include <algorithm>
 #include <concepts>
-#include <cstddef>
 #include <initializer_list>
-#include <limits>
+#include <iterator>
+#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -13,21 +14,23 @@
 
 namespace qcpc {
 
+using ParseRet = std::unique_ptr<Token>;
+
 /// Concept to check if a type is a rule type.
 // clang-format off
 template<class T>
 concept RuleType = std::is_empty_v<T> && requires(MemoryInput in) {
-    { T::parse(in) } -> std::same_as<Token::Ptr>;
+    { T::parse(in) } -> std::same_as<ParseRet>;
 };
 // clang-format on
 
 // This macro is mainly for reducing refactoring workload during early development.
 #define DEFINE_PARSE(input_param) \
     template<InputType Input>     \
-    static Token::Ptr parse(Input& input_param) noexcept
+    static ParseRet parse(Input& input_param) noexcept
 
 // Template function `make_token(Args&&...)` may prevent some type deductions.
-#define MAKE_TOKEN(...) Token::Ptr(new Token(__VA_ARGS__))
+#define MAKE_TOKEN(...) ParseRet(new Token(__VA_ARGS__))
 
 // ==================
 // || Atomic Rules ||
@@ -101,7 +104,7 @@ template<char C>
 inline constexpr One<C> one{};
 
 /// Match and consume given string.
-template<char... Cs>
+template<char C, char... Cs>
 struct Str {
     // Waiting for complete support of "Class Types in Non-Type Template Parameters" feature.
     // With this feature, we can pass a string literal as a template parameter.
@@ -109,19 +112,17 @@ struct Str {
     DEFINE_PARSE(in) {
         auto pos = in.pos();
         if (in.size() < sizeof...(Cs)) return nullptr;
-        for (char c: {Cs...}) {
-            if (c != *in) {
-                in.jump(pos);
-                return nullptr;
-            }
+        if (C == *in && ((Cs == *++in) && ...)) {
             ++in;
+            return MAKE_TOKEN({pos, in.current()});
         }
-        return MAKE_TOKEN({pos, in.current()});
+        in.jump(pos);
+        return nullptr;
     }
 };
 
-template<char... Cs>
-inline constexpr Str<Cs...> str{};
+template<char C, char... Cs>
+inline constexpr Str<C, Cs...> str{};
 
 /// Match and consume a character in given ASCII range(s).
 template<char... Cs>
@@ -148,7 +149,7 @@ inline constexpr Range<Cs...> range{};
 namespace detail {
 
 template<InputType Input>
-Token::Ptr light_plus(Input& in, bool (*pred)(char)) {
+ParseRet light_plus(Input& in, bool (*pred)(char)) {
     if (!pred(*in)) return nullptr;
     auto pos = in.pos();
     do { ++in; } while (pred(*in));
@@ -191,9 +192,35 @@ inline constexpr AlNum alnum{};
 // || Combinators ||
 // =================
 
+namespace detail {
+
+struct CombTag {};
+
+template<class T>
+concept CombRule = std::derived_from<T, CombTag>;
+
+inline void concat(Token::Children& dst, Token::Children& src) noexcept {
+    if (dst.empty()) {
+        dst = std::move(src);
+    } else {
+        dst.reserve(dst.size() + src.size());
+        std::move(src.begin(), src.end(), std::back_inserter(dst));
+        src.clear();
+    }
+}
+
+inline ParseRet wrap(ParseRet ret, RuleTag tag = NO_RULE) {
+    auto pos = ret->pos();
+    Token::Children children{};
+    children.push_back(std::move(*ret));
+    return MAKE_TOKEN(std::move(children), pos, tag);
+}
+
+}  // namespace detail
+
 /// PEG and-predicate `&e`.
 template<RuleType R>
-struct At {
+struct At: detail::CombTag {
     DEFINE_PARSE(in) {
         auto pos = in.pos();
         auto ret = R::parse(in);
@@ -209,7 +236,7 @@ template<RuleType R>
 
 /// PEG not-predicate `!e`.
 template<RuleType R>
-struct NotAt {
+struct NotAt: detail::CombTag {
     DEFINE_PARSE(in) {
         auto pos = in.pos();
         auto ret = R::parse(in);
@@ -225,7 +252,7 @@ template<RuleType R>
 
 /// PEG optional `e?`.
 template<RuleType R>
-struct Opt {
+struct Opt: detail::CombTag {
     DEFINE_PARSE(in) {
         auto ret = R::parse(in);
         if (ret) return ret;
@@ -240,19 +267,20 @@ template<RuleType R>
 
 /// PEG zero-or-more `e*`.
 template<RuleType R>
-struct Star {
+struct Star: detail::CombTag {
     DEFINE_PARSE(in) {
         auto pos = in.pos();
-        auto head = R::parse(in);
-        if (!head) return MAKE_TOKEN(pos);
-        Token* tail = head.get();
-        while (true) {
-            auto ret = R::parse(in);
-            if (!ret) break;
-            tail->link(std::move(ret));
-            tail = tail->next();
+
+        Token::Children children{};
+        while (auto ret = R::parse(in)) {
+            if constexpr (detail::CombRule<R>) {
+                detail::concat(children, ret->children);
+            } else {
+                children.push_back(std::move(*ret));
+            }
         }
-        return MAKE_TOKEN(std::move(head), {pos, in.current()});
+
+        return MAKE_TOKEN(std::move(children), {pos, in.current()});
     }
 };
 
@@ -263,19 +291,20 @@ template<RuleType R>
 
 /// PEG one-or-more `e+`.
 template<RuleType R>
-struct Plus {
+struct Plus: detail::CombTag {
     DEFINE_PARSE(in) {
         auto pos = in.pos();
-        auto head = R::parse(in);
-        if (!head) return nullptr;
-        Token* tail = head.get();
-        while (true) {
-            auto ret = R::parse(in);
-            if (!ret) break;
-            tail->link(std::move(ret));
-            tail = tail->next();
+
+        Token::Children children{};
+        while (auto ret = R::parse(in)) {
+            if constexpr (detail::CombRule<R>) {
+                detail::concat(children, ret->children);
+            } else {
+                children.push_back(std::move(*ret));
+            }
         }
-        return MAKE_TOKEN(std::move(head), {pos, in.current()});
+
+        return children.empty() ? nullptr : MAKE_TOKEN(std::move(children), {pos, in.current()});
     }
 };
 
@@ -286,24 +315,32 @@ template<RuleType R>
 
 /// PEG sequence `e1 e2`.
 template<RuleType R, RuleType... Rs>
-struct Seq {
+struct Seq: detail::CombTag {
     DEFINE_PARSE(in) {
         auto pos = in.pos();
-        auto head = R::parse(in);
-        if (!head) return nullptr;
-        Token* tail = head.get();
-        // Type hint is necessary for GCC.
-        using ParseList = std::initializer_list<Token::Ptr (*)(Input&)>;
-        for (auto f: ParseList{Rs::template parse<Input>...}) {
-            auto ret = f(in);
-            if (!ret) {
-                in.jump(pos);
-                return nullptr;
-            }
-            tail->link(std::move(ret));
-            tail = tail->next();
+        auto ret = R::parse(in);
+        if (!ret) return nullptr;
+
+        Token::Children children{};
+        children.push_back(std::move(*ret));
+        if ((_helper<Rs>(in, children) && ...))
+            return MAKE_TOKEN(std::move(children), {pos, in.current()});
+
+        in.jump(pos);
+        return nullptr;
+    }
+
+  private:
+    template<RuleType R_, InputType Input>
+    static bool _helper(Input& in, Token::Children& children) noexcept {
+        auto ret = R_::parse(in);
+        if (!ret) return false;
+        if constexpr (detail::CombRule<R_>) {
+            detail::concat(children, ret->children);
+        } else {
+            children.push_back(std::move(*ret));
         }
-        return MAKE_TOKEN(std::move(head), {pos, in.current()});
+        return true;
     }
 };
 
@@ -328,16 +365,23 @@ template<RuleType... R1s, RuleType... R2s>
 }
 
 /// PEG ordered choice `e1 | e2`.
-template<RuleType... Rs>
-struct Sor {
+template<RuleType R, RuleType... Rs>
+struct Sor: detail::CombTag {
     DEFINE_PARSE(in) {
-        // Type hint is necessary for GCC.
-        using ParseList = std::initializer_list<Token::Ptr (*)(Input&)>;
-        for (auto f: ParseList{Rs::template parse<Input>...}) {
-            auto ret = f(in);
-            if (ret) return ret;
+        auto ret = _helper<R>(in);
+        ret || ((ret = _helper<Rs>(in)) || ...);
+        return ret;
+    }
+
+  private:
+    template<RuleType R_, InputType Input>
+    static ParseRet _helper(Input& in) {
+        auto ret = R_::parse(in);
+        if constexpr (detail::CombRule<R_>) {
+            return ret;
+        } else {
+            return ret ? detail::wrap(std::move(ret)) : nullptr;
         }
-        return nullptr;
     }
 };
 
