@@ -28,14 +28,14 @@ void test_helper(Input& in, bool jump = false) {
     }
 }
 
-TEST(InputTest, MemoryInput) {
+TEST(Input, MemoryInput) {
     qcpc::MemoryInput in(test_cstr, (&test_cstr)[1] - 1);
     ASSERT_EQ(in.current(), test_cstr);
     test_helper(in);
     ASSERT_EQ(in.current(), (&test_cstr)[1] - 1);
 }
 
-TEST(InputTest, StringInput) {
+TEST(Input, StringInput) {
     qcpc::StringInput in(test_cstr);
     test_helper(in);
 }

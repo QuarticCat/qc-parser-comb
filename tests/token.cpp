@@ -3,7 +3,7 @@
 #include "gtest/gtest.h"
 #include "qcpc/qcpc.hpp"
 
-TEST(TokenTest, IterToken) {
+TEST(Token, Iter) {
     const char cstr[] = "Handsome QC";
     qcpc::Token root({{cstr, 1, 0}, (&cstr)[1] - 1});
     ASSERT_EQ(root.line(), 1);

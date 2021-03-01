@@ -75,7 +75,7 @@ int eval(qcpc::Token& token) {
     }
 }
 
-TEST(CalculatorTest, Case1) {
+TEST(Calculator, Case1) {
     auto ret = qcpc::parse(expr, qcpc::StringInput("(1+2)/3*5*6-2"));
     // std::cout << "print tree:\n";
     // print_tree(*ret);
