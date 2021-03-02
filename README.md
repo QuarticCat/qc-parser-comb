@@ -1,5 +1,8 @@
 # QC Parser Comb
 
+![c++20](https://img.shields.io/badge/c%2B%2B-20-blue)
+![header-only](https://img.shields.io/badge/header-only-blue)
+
 A header-only parser combinator library for fun. Aiming to be simple and elegant.
 
 ## Examples
