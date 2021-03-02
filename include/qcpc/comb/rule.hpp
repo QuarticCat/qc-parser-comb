@@ -99,8 +99,8 @@ struct Str {
     // With this feature, we can pass a string literal as a template parameter.
 
     DEFINE_PARSE(in, ) {
-        auto pos = in.pos();
         if (in.size() < sizeof...(Cs)) return false;
+        auto pos = in.pos();
         if (C == *in && ((Cs == *++in) && ...)) {
             ++in;
             return true;
