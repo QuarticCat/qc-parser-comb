@@ -42,7 +42,7 @@ inline constexpr int rule_set = 0;
             if constexpr (is_silent) {                                                  \
                 return rule.parse(in, out);                                             \
             } else {                                                                    \
-                Token::Children children{};                                             \
+                ::qcpc::Token::Children children{};                                     \
                 auto pos = in.pos();                                                    \
                 if (rule.parse(in, children)) {                                         \
                     out.emplace_back(                                                   \
@@ -82,6 +82,25 @@ inline constexpr int rule_set = 0;
 #define QCPC_DECL_DEF_(name) \
     QCPC_DECL_(name);        \
     QCPC_DEF(name)
+
+/// Set a declared rule as separator. After that, you can replace `&` with `&&` to insert this rule.
+/// It is recommended that this rule is totally silent, i.e. it and all its sub-rules are silent.
+// clang-format off
+#define QCPC_SET_SEP(name)                                              \
+    template<::qcpc::RuleType R1, ::qcpc::RuleType R2>                  \
+    [[nodiscard]] constexpr ::qcpc::Seq<R1, decltype(name), R2>         \
+    operator&&(R1, R2) { return {}; }                                   \
+    template<::qcpc::RuleType R1, ::qcpc::RuleType... R2s>              \
+    [[nodiscard]] constexpr ::qcpc::Seq<R1, decltype(name), R2s...>     \
+    operator&&(R1, ::qcpc::Seq<R2s...>) { return {}; }                  \
+    template<::qcpc::RuleType... R1s, ::qcpc::RuleType R2>              \
+    [[nodiscard]] constexpr ::qcpc::Seq<R1s..., decltype(name), R2>     \
+    operator&&(::qcpc::Seq<R1s...>, R2) { return {}; }                  \
+    template<::qcpc::RuleType... R1s, ::qcpc::RuleType... R2s>          \
+    [[nodiscard]] constexpr ::qcpc::Seq<R1s..., decltype(name), R2s...> \
+    operator&&(::qcpc::Seq<R1s...>, ::qcpc::Seq<R2s...>) { return {}; } \
+    static_assert(true)
+// clang-format on
 
 namespace detail {
 
