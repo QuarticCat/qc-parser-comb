@@ -39,19 +39,19 @@ struct `Range<char...>` / variable `range<char...>`
 
 struct `Alpha` / variable `alpha`
 - Match and consume alphabetic letters.
-- Equivalent to `[a-zA-Z]+`.
+- Equivalent to `[a-zA-Z]`.
 
 struct `Num` / variable `num`
 - Match and consume numbers.
-- Equivalent to `[0-9]+`.
+- Equivalent to `[0-9]`.
 
 struct `AlNum` / variable `alnum`
 - Match and consume alphabetic letters and numbers.
-- Equivalent to `[a-zA-Z0-9]+`.
+- Equivalent to `[a-zA-Z0-9]`.
 
 struct `Blank` / variable `blank`
 - Match and consume blank characters.
-- Equivalent to `[ \t\r\n]+`.
+- Equivalent to `[ \t\r\n]`.
 
 ## Combinators
 
