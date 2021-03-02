@@ -91,101 +91,66 @@ struct One {
 template<char C>
 inline constexpr One<C> one{};
 
-// /// Match and consume given string.
-// template<char C, char... Cs>
-// struct Str {
-//     // Waiting for complete support of "Class Types in Non-Type Template Parameters" feature.
-//     // With this feature, we can pass a string literal as a template parameter.
-//
-//     DEFINE_PARSE(in) {
-//         auto pos = in.pos();
-//         if (in.size() < sizeof...(Cs)) return nullptr;
-//         if (C == *in && ((Cs == *++in) && ...)) {
-//             ++in;
-//             return MAKE_TOKEN({pos, in.current()});
-//         }
-//         in.jump(pos);
-//         return nullptr;
-//     }
-// };
-//
-// template<char C, char... Cs>
-// inline constexpr Str<C, Cs...> str{};
-//
-// /// Match and consume a character in given ASCII range(s).
-// template<char... Cs>
-// struct Range {
-//     static_assert(sizeof...(Cs) % 2 == 0, "Param number should be even.");
-//     // Should we check the validity of ranges?
-//
-//     DEFINE_PARSE(in) {
-//         constexpr char cs[] = {Cs...};
-//         for (size_t i = 0; i < sizeof...(Cs); i += 2) {
-//             if (cs[i] <= *in && *in <= cs[i + 1]) {
-//                 auto pos = in.pos();
-//                 ++in;
-//                 return MAKE_TOKEN({pos, in.current()});
-//             }
-//         }
-//         return nullptr;
-//     }
-// };
-//
-// template<char... Cs>
-// inline constexpr Range<Cs...> range{};
-//
-// namespace detail {
-//
-// template<InputType Input>
-// ParseRet light_plus(Input& in, bool (*pred)(char)) {
-//     if (!pred(*in)) return nullptr;
-//     auto pos = in.pos();
-//     do { ++in; } while (pred(*in));
-//     return MAKE_TOKEN({pos, in.current()});
-// }
-//
-// }  // namespace detail
-//
-// /// Match and consume alphabetic letters. Equivalent to `[a-zA-Z]+`.
-// struct Alpha {
-//     DEFINE_PARSE(in) {
-//         return detail::light_plus(
-//             in, [](char c) { return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z'); });
-//     }
-// };
-//
-// inline constexpr Alpha alpha{};
-//
-// /// Match and consume numbers. Equivalent to `[0-9]+`.
-// struct Num {
-//     DEFINE_PARSE(in) {
-//         return detail::light_plus(in, [](char c) { return '0' <= c && c <= '9'; });
-//     }
-// };
-//
-// inline constexpr Num num{};
-//
-// /// Match and consume alphabetic letters and numbers. Equivalent to `[a-zA-Z0-9]+`.
-// struct AlNum {
-//     DEFINE_PARSE(in) {
-//         return detail::light_plus(in, [](char c) {
-//             return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9');
-//         });
-//     }
-// };
-//
-// inline constexpr AlNum alnum{};
-//
-// /// Match and consume blank characters. Equivalent to `[ \t\r\n]+`.
-// struct Blank {
-//     DEFINE_PARSE(in) {
-//         return detail::light_plus(
-//             in, [](char c) { return c == ' ' || c == '\t' || c == '\r' || c == '\n'; });
-//     }
-// };
-//
-// inline constexpr Blank blank{};
-//
+/// Match and consume given string.
+/// `str<'a', 'b', 'c', 'd'>` means `"abcd"` in PEG.
+template<char C, char... Cs>
+struct Str {
+    // Waiting for complete support of "Class Types in Non-Type Template Parameters" feature.
+    // With this feature, we can pass a string literal as a template parameter.
+
+    DEFINE_PARSE(in, ) {
+        auto pos = in.pos();
+        if (in.size() < sizeof...(Cs)) return false;
+        if (C == *in && ((Cs == *++in) && ...)) {
+            ++in;
+            return true;
+        }
+        in.jump(pos);
+        return false;
+    }
+};
+
+template<char C, char... Cs>
+inline constexpr Str<C, Cs...> str{};
+
+/// Match and consume a character in given ASCII range(s).
+/// `range<'a', 'z', 'A', 'Z'>` means `[a-zA-Z]` in PEG.
+template<char... Cs>
+struct Range {
+    static_assert(sizeof...(Cs) % 2 == 0, "Param number should be even.");
+    // TODO: Should we check the validity of ranges?
+
+    DEFINE_PARSE(in, ) {
+        constexpr char cs[] = {Cs...};  // by tests, compiler will inline this
+        for (size_t i = 0; i < sizeof...(Cs); i += 2) {
+            if (cs[i] <= *in && *in <= cs[i + 1]) {
+                ++in;
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+template<char... Cs>
+inline constexpr Range<Cs...> range{};
+
+/// Match and consume any given character once.
+/// `any<'a', 'b', 'c'>` means `[abc]` in PEG.
+template<char... Cs>
+struct Any {
+    DEFINE_PARSE(in, ) {
+        if (((*in == Cs) || ...)) {
+            ++in;
+            return true;
+        }
+        return false;
+    }
+};
+
+template<char... Cs>
+inline constexpr Any<Cs...> any{};
+
 // namespace detail {
 //
 // struct CombTag {};

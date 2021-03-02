@@ -64,94 +64,42 @@ TEST(SimpleRule, One) {
     ASSERT_EQ(in2.current(), in2.begin());
 }
 
-// QCPC_DECL_DEF(str_rule) = str<'q', 'c', 'p', 'c'>;
-//
-// TEST(SimpleRule, Str) {
-//     StringInput in1("qcpc");
-//     ASSERT_TRUE(parse(str_rule, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//
-//     StringInput in2("qcp");
-//     ASSERT_FALSE(parse(str_rule, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-// }
-//
-// QCPC_DECL_DEF(range_rule) = range<'a', 'z', 'A', 'Z'>;
-//
-// TEST(SimpleRule, Range) {
-//     StringInput in1("a");
-//     ASSERT_TRUE(parse(range_rule, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//
-//     StringInput in2("-");
-//     ASSERT_FALSE(parse(range_rule, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-// }
-//
-// QCPC_DECL_DEF(alpha_rule) = alpha;
-//
-// TEST(SimpleRule, Alpha) {
-//     StringInput in1("abc");
-//     ASSERT_TRUE(parse(alpha_rule, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//
-//     StringInput in2("---");
-//     ASSERT_FALSE(parse(alpha_rule, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-//
-//     StringInput in3("");
-//     ASSERT_FALSE(parse(alpha_rule, in3));
-//     ASSERT_EQ(in3.current(), in3.begin());
-// }
-//
-// QCPC_DECL_DEF(num_rule) = num;
-//
-// TEST(SimpleRule, Num) {
-//     StringInput in1("123");
-//     ASSERT_TRUE(parse(num_rule, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//
-//     StringInput in2("---");
-//     ASSERT_FALSE(parse(num_rule, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-//
-//     StringInput in3("");
-//     ASSERT_FALSE(parse(num_rule, in3));
-//     ASSERT_EQ(in3.current(), in3.begin());
-// }
-//
-// QCPC_DECL_DEF(alnum_rule) = alnum;
-//
-// TEST(SimpleRule, AlNum) {
-//     StringInput in1("1b3");
-//     ASSERT_TRUE(parse(alnum_rule, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//
-//     StringInput in2("---");
-//     ASSERT_FALSE(parse(alnum_rule, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-//
-//     StringInput in3("");
-//     ASSERT_FALSE(parse(alnum_rule, in3));
-//     ASSERT_EQ(in3.current(), in3.begin());
-// }
-//
-// QCPC_DECL_DEF(blank_rule) = blank;
-//
-// TEST(SimpleRule, Blank) {
-//     StringInput in1(" \t\r\n");
-//     ASSERT_TRUE(parse(blank_rule, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//
-//     StringInput in2("---");
-//     ASSERT_FALSE(parse(blank_rule, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-//
-//     StringInput in3("");
-//     ASSERT_FALSE(parse(blank_rule, in3));
-//     ASSERT_EQ(in3.current(), in3.begin());
-// }
-//
+QCPC_DECL_DEF(str_rule) = str<'q', 'c', 'p', 'c'>;
+
+TEST(SimpleRule, Str) {
+    StringInput in1("qcpc");
+    ASSERT_TRUE(parse(str_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("qcp");
+    ASSERT_FALSE(parse(str_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
+QCPC_DECL_DEF(range_rule) = range<'a', 'z', 'A', 'Z'>;
+
+TEST(SimpleRule, Range) {
+    StringInput in1("a");
+    ASSERT_TRUE(parse(range_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("-");
+    ASSERT_FALSE(parse(range_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
+QCPC_DECL_DEF(any_rule) = any<'a', 'b', 'c'>;
+
+TEST(SimpleRule, Any) {
+    StringInput in1("c");
+    ASSERT_TRUE(parse(range_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("-");
+    ASSERT_FALSE(parse(range_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
 // QCPC_DECL_DEF(at_rule) = &str_rule;
 //
 // TEST(SimpleRule, At) {

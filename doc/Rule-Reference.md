@@ -1,14 +1,10 @@
 # Rule Reference
 
-- [Atomic Rules](#atomic-rules)
-  - [Zero-Width Rules](#zero-width-rules)
-  - [Basic Rules](#basic-rules)
-  - [Predefined Convenient Rules](#predefined-convenient-rules)
+- [Zero-Width Rules](#zero-width-rules)
+- [ASCII Rules](#ascii-rules)
 - [Combinators](#combinators)
 
-## Atomic Rules
-
-### Zero-Width Rules
+## Zero-Width Rules
 
 struct `Boi` / variable `boi`
 - Match the beginning of input. Consume nothing.
@@ -22,7 +18,7 @@ struct `Bol` / variable `bol`
 struct `Eol` / variable `eol`
 - Match the end of lines. Consume "\r\n" or "\n".
 
-### Basic Rules
+## ASCII Rules
 
 struct `One<char>` / variable `one<char>`
 - Match and consume a given character.
@@ -35,23 +31,9 @@ struct `Range<char...>` / variable `range<char...>`
 - Match and consume a character in given ASCII range(s).
 - `range<'a', 'z', 'A', 'Z'>` means `[a-zA-Z]` in PEG.
 
-### Predefined Convenient Rules
-
-struct `Alpha` / variable `alpha`
-- Match and consume alphabetic letters.
-- Equivalent to `[a-zA-Z]`.
-
-struct `Num` / variable `num`
-- Match and consume numbers.
-- Equivalent to `[0-9]`.
-
-struct `AlNum` / variable `alnum`
-- Match and consume alphabetic letters and numbers.
-- Equivalent to `[a-zA-Z0-9]`.
-
-struct `Blank` / variable `blank`
-- Match and consume blank characters.
-- Equivalent to `[ \t\r\n]`.
+struct `Any<char...>` / variable `any<char...>`
+- Match and consume any given character once.
+- `any<'a', 'b', 'c'>` means `[abc]` in PEG.
 
 ## Combinators
 
