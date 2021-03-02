@@ -89,13 +89,15 @@ int eval(qcpc::Token& token) {
 }
 
 TEST(Calculator, Case1) {
-    auto ret = parse(expr, StringInput("(1+2)/3*5*6-2"));
+    StringInput in("(1+2)/3*5*6-2");
+    auto ret = parse(expr, in);
     ASSERT_TRUE(ret);
     ASSERT_EQ(eval(ret->children[0]), 28);
 }
 
 TEST(Calculator, Case2) {
-    auto ret = parse(expr, StringInput("(1 + 2) / 3 * 5 * 6 - 2"));
+    StringInput in("(1 + 2) / 3 * 5 * 6 - 2");
+    auto ret = parse(expr, in);
     ASSERT_TRUE(ret);
     ASSERT_EQ(eval(ret->children[0]), 28);
 }

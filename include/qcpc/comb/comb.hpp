@@ -102,16 +102,11 @@ inline constexpr int rule_set = 0;
     static_assert(true)
 // clang-format on
 
-namespace detail {
-
-template<class T>
-concept UserInput = InputType<std::remove_reference_t<T>>;
-
-}  // namespace detail
-
+/// The sole parsing entry for users. It does not allow `Input&&` because the returned `Token`s
+/// holds views into the input object, so it must outlive the parse function.
 // clang-format off
-template<detail::GeneratedRule Rule, detail::UserInput Input>
-std::optional<Token> parse(Rule, Input&& in) requires (!Rule::is_silent) {
+template<detail::GeneratedRule Rule, InputType Input>
+std::optional<Token> parse(Rule, Input& in) requires (!Rule::is_silent) {
     Token::Children children{};
     if (Rule::parse(in, children))
         return std::move(children[0]);
