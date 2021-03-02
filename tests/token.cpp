@@ -5,7 +5,7 @@
 
 TEST(Token, Iter) {
     const char cstr[] = "Handsome QC";
-    qcpc::Token root({{cstr, 1, 0}, (&cstr)[1] - 1});
+    qcpc::Token root({}, {{cstr, 1, 0}, (&cstr)[1] - 1});
     ASSERT_EQ(root.line(), 1);
     ASSERT_EQ(root.column(), 0);
     size_t count = 0;

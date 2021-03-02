@@ -14,9 +14,6 @@ struct TokenPos {
     size_t line;
     size_t column;
 
-    TokenPos(InputPos pos) noexcept
-        : begin(pos.current), end(pos.current), line(pos.line), column(pos.column) {}
-
     TokenPos(InputPos start, const char* end) noexcept
         : begin(start.current), end(end), line(start.line), column(start.column) {}
 
@@ -30,8 +27,6 @@ struct Token {
     using Children = std::vector<Token>;
 
     Children children;
-
-    explicit Token(TokenPos pos, RuleTag tag = NO_RULE): _pos(pos), _tag(tag) {}
 
     Token(Children children, TokenPos pos, RuleTag tag = NO_RULE)
         : children(std::move(children)), _pos(pos), _tag(tag) {}
