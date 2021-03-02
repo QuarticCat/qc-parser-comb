@@ -100,141 +100,141 @@ TEST(SimpleRule, Any) {
     ASSERT_EQ(in2.current(), in2.begin());
 }
 
-// QCPC_DECL_DEF(at_rule) = &str_rule;
-//
-// TEST(SimpleRule, At) {
-//     StringInput in1("qcpc");
-//     ASSERT_TRUE(parse(at_rule, in1));
-//     ASSERT_EQ(in1.current(), in1.begin());
-//
-//     StringInput in2("qcp");
-//     ASSERT_FALSE(parse(at_rule, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-// }
-//
-// QCPC_DECL_DEF(notat_rule) = !str_rule;
-//
-// TEST(SimpleRule, NotAt) {
-//     StringInput in1("qcpc");
-//     ASSERT_FALSE(parse(notat_rule, in1));
-//     ASSERT_EQ(in1.current(), in1.begin());
-//
-//     StringInput in2("qcp");
-//     ASSERT_TRUE(parse(notat_rule, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-// }
-//
-// QCPC_DECL_DEF(opt_rule) = -str_rule;
-//
-// TEST(SimpleRule, Opt) {
-//     StringInput in1("qcpc");
-//     ASSERT_TRUE(parse(opt_rule, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//
-//     StringInput in2("qcp");
-//     ASSERT_TRUE(parse(opt_rule, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-// }
-//
-// QCPC_DECL_DEF(star_rule) = *str_rule;
-//
-// TEST(SimpleRule, Star) {
-//     StringInput in1("qcpc"
-//                     "qcpc");
-//     ASSERT_TRUE(parse(star_rule, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//
-//     StringInput in2("qcp");
-//     ASSERT_TRUE(parse(star_rule, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-// }
-//
-// QCPC_DECL_DEF(plus_rule) = +str_rule;
-//
-// TEST(SimpleRule, Plus) {
-//     StringInput in1("qcpc"
-//                     "qcpc");
-//     ASSERT_TRUE(parse(plus_rule, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//
-//     StringInput in2("qcp");
-//     ASSERT_FALSE(parse(plus_rule, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-// }
+QCPC_DECL_DEF(at_rule) = &str_rule;
+
+TEST(SimpleRule, At) {
+    StringInput in1("qcpc");
+    ASSERT_TRUE(parse(at_rule, in1));
+    ASSERT_EQ(in1.current(), in1.begin());
+
+    StringInput in2("qcp");
+    ASSERT_FALSE(parse(at_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
+QCPC_DECL_DEF(notat_rule) = !str_rule;
+
+TEST(SimpleRule, NotAt) {
+    StringInput in1("qcpc");
+    ASSERT_FALSE(parse(notat_rule, in1));
+    ASSERT_EQ(in1.current(), in1.begin());
+
+    StringInput in2("qcp");
+    ASSERT_TRUE(parse(notat_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
+QCPC_DECL_DEF(opt_rule) = -str_rule;
+
+TEST(SimpleRule, Opt) {
+    StringInput in1("qcpc");
+    ASSERT_TRUE(parse(opt_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("qcp");
+    ASSERT_TRUE(parse(opt_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
+QCPC_DECL_DEF(star_rule) = *str_rule;
+
+TEST(SimpleRule, Star) {
+    StringInput in1("qcpc"
+                    "qcpc");
+    ASSERT_TRUE(parse(star_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("qcp");
+    ASSERT_TRUE(parse(star_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
+QCPC_DECL_DEF(plus_rule) = +str_rule;
+
+TEST(SimpleRule, Plus) {
+    StringInput in1("qcpc"
+                    "qcpc");
+    ASSERT_TRUE(parse(plus_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("qcp");
+    ASSERT_FALSE(parse(plus_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
 
 #define COMPARE_RULE(rule1, rule2)                             \
     (std::same_as<decltype(detail::rule_set<decltype(rule1)>), \
                   decltype(detail::rule_set<decltype(rule2)>)>)
 
-// QCPC_DECL_DEF(seq_rule1) = str_rule & str_rule & str_rule & str_rule;
-// QCPC_DECL_DEF(seq_rule2) = (str_rule & str_rule) & str_rule & str_rule;
-// QCPC_DECL_DEF(seq_rule3) = str_rule & str_rule & (str_rule & str_rule);
-// QCPC_DECL_DEF(seq_rule4) = (str_rule & str_rule) & (str_rule & str_rule);
-//
-// TEST(SimpleRule, Seq) {
-//     ASSERT_TRUE(COMPARE_RULE(seq_rule1, seq_rule2));
-//     ASSERT_TRUE(COMPARE_RULE(seq_rule2, seq_rule3));
-//     ASSERT_TRUE(COMPARE_RULE(seq_rule3, seq_rule4));
-//
-//     StringInput in1("qcpc"
-//                     "qcpc"
-//                     "qcpc"
-//                     "qcpc");
-//     InputPos pos1 = in1.pos();
-//     ASSERT_TRUE(parse(seq_rule1, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//     in1.jump(pos1);
-//     ASSERT_TRUE(parse(seq_rule2, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//     in1.jump(pos1);
-//     ASSERT_TRUE(parse(seq_rule3, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//     in1.jump(pos1);
-//     ASSERT_TRUE(parse(seq_rule4, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//
-//     StringInput in2("qcpc");
-//     ASSERT_FALSE(parse(seq_rule1, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-//     ASSERT_FALSE(parse(seq_rule2, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-//     ASSERT_FALSE(parse(seq_rule3, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-//     ASSERT_FALSE(parse(seq_rule4, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-// }
-//
-// QCPC_DECL_DEF(sor_rule1) = str<'a'> | str<'b'> | str<'c'> | str<'d'>;
-// QCPC_DECL_DEF(sor_rule2) = (str<'a'> | str<'b'>) | str<'c'> | str<'d'>;
-// QCPC_DECL_DEF(sor_rule3) = str<'a'> | str<'b'> | (str<'c'> | str<'d'>);
-// QCPC_DECL_DEF(sor_rule4) = (str<'a'> | str<'b'>) | (str<'c'> | str<'d'>);
-//
-// TEST(SimpleRule, Sor) {
-//     ASSERT_TRUE(COMPARE_RULE(sor_rule1, sor_rule2));
-//     ASSERT_TRUE(COMPARE_RULE(sor_rule2, sor_rule3));
-//     ASSERT_TRUE(COMPARE_RULE(sor_rule3, sor_rule4));
-//
-//     StringInput in1("a");
-//     InputPos pos1 = in1.pos();
-//     ASSERT_TRUE(parse(sor_rule1, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//     in1.jump(pos1);
-//     ASSERT_TRUE(parse(sor_rule2, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//     in1.jump(pos1);
-//     ASSERT_TRUE(parse(sor_rule3, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//     in1.jump(pos1);
-//     ASSERT_TRUE(parse(sor_rule4, in1));
-//     ASSERT_EQ(in1.current(), in1.end());
-//
-//     StringInput in2("e");
-//     ASSERT_FALSE(parse(sor_rule1, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-//     ASSERT_FALSE(parse(sor_rule2, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-//     ASSERT_FALSE(parse(sor_rule3, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-//     ASSERT_FALSE(parse(sor_rule4, in2));
-//     ASSERT_EQ(in2.current(), in2.begin());
-// }
+QCPC_DECL_DEF(seq_rule1) = str_rule & str_rule & str_rule & str_rule;
+QCPC_DECL_DEF(seq_rule2) = (str_rule & str_rule) & str_rule & str_rule;
+QCPC_DECL_DEF(seq_rule3) = str_rule & str_rule & (str_rule & str_rule);
+QCPC_DECL_DEF(seq_rule4) = (str_rule & str_rule) & (str_rule & str_rule);
+
+TEST(SimpleRule, Seq) {
+    ASSERT_TRUE(COMPARE_RULE(seq_rule1, seq_rule2));
+    ASSERT_TRUE(COMPARE_RULE(seq_rule2, seq_rule3));
+    ASSERT_TRUE(COMPARE_RULE(seq_rule3, seq_rule4));
+
+    StringInput in1("qcpc"
+                    "qcpc"
+                    "qcpc"
+                    "qcpc");
+    InputPos pos1 = in1.pos();
+    ASSERT_TRUE(parse(seq_rule1, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+    in1.jump(pos1);
+    ASSERT_TRUE(parse(seq_rule2, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+    in1.jump(pos1);
+    ASSERT_TRUE(parse(seq_rule3, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+    in1.jump(pos1);
+    ASSERT_TRUE(parse(seq_rule4, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("qcpc");
+    ASSERT_FALSE(parse(seq_rule1, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+    ASSERT_FALSE(parse(seq_rule2, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+    ASSERT_FALSE(parse(seq_rule3, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+    ASSERT_FALSE(parse(seq_rule4, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}
+
+QCPC_DECL_DEF(sor_rule1) = str<'a'> | str<'b'> | str<'c'> | str<'d'>;
+QCPC_DECL_DEF(sor_rule2) = (str<'a'> | str<'b'>) | str<'c'> | str<'d'>;
+QCPC_DECL_DEF(sor_rule3) = str<'a'> | str<'b'> | (str<'c'> | str<'d'>);
+QCPC_DECL_DEF(sor_rule4) = (str<'a'> | str<'b'>) | (str<'c'> | str<'d'>);
+
+TEST(SimpleRule, Sor) {
+    ASSERT_TRUE(COMPARE_RULE(sor_rule1, sor_rule2));
+    ASSERT_TRUE(COMPARE_RULE(sor_rule2, sor_rule3));
+    ASSERT_TRUE(COMPARE_RULE(sor_rule3, sor_rule4));
+
+    StringInput in1("a");
+    InputPos pos1 = in1.pos();
+    ASSERT_TRUE(parse(sor_rule1, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+    in1.jump(pos1);
+    ASSERT_TRUE(parse(sor_rule2, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+    in1.jump(pos1);
+    ASSERT_TRUE(parse(sor_rule3, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+    in1.jump(pos1);
+    ASSERT_TRUE(parse(sor_rule4, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("e");
+    ASSERT_FALSE(parse(sor_rule1, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+    ASSERT_FALSE(parse(sor_rule2, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+    ASSERT_FALSE(parse(sor_rule3, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+    ASSERT_FALSE(parse(sor_rule4, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+}

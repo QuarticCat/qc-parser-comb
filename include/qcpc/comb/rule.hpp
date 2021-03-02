@@ -151,218 +151,142 @@ struct Any {
 template<char... Cs>
 inline constexpr Any<Cs...> any{};
 
-// namespace detail {
-//
-// struct CombTag {};
-//
-// template<class T>
-// concept CombRule = std::derived_from<T, CombTag>;
-//
-// inline void concat(Token::Children& dst, Token::Children& src) noexcept {
-//     if (dst.empty()) {
-//         dst = std::move(src);
-//     } else {
-//         dst.reserve(dst.size() + src.size());
-//         std::move(src.begin(), src.end(), std::back_inserter(dst));
-//         src.clear();
-//     }
-// }
-//
-// inline ParseRet wrap(ParseRet ret, RuleTag tag = NO_RULE) {
-//     auto pos = ret->pos();
-//     Token::Children children{};
-//     children.push_back(std::move(*ret));
-//     return MAKE_TOKEN(std::move(children), pos, tag);
-// }
-//
-// }  // namespace detail
-//
-// /// PEG and-predicate `&e`.
-// template<RuleType R>
-// struct At: detail::CombTag {
-//     DEFINE_PARSE(in) {
-//         auto pos = in.pos();
-//         auto ret = R::parse(in);
-//         in.jump(pos);
-//         return ret ? MAKE_TOKEN(pos) : nullptr;
-//     }
-// };
-//
-// template<RuleType R>
-// [[nodiscard]] constexpr At<R> operator&(R) {
-//     return {};
-// }
-//
-// /// PEG not-predicate `!e`.
-// template<RuleType R>
-// struct NotAt: detail::CombTag {
-//     DEFINE_PARSE(in) {
-//         auto pos = in.pos();
-//         auto ret = R::parse(in);
-//         in.jump(pos);
-//         return ret ? nullptr : MAKE_TOKEN(pos);
-//     }
-// };
-//
-// template<RuleType R>
-// [[nodiscard]] constexpr NotAt<R> operator!(R) {
-//     return {};
-// }
-//
-// /// PEG optional `e?`.
-// template<RuleType R>
-// struct Opt: detail::CombTag {
-//     DEFINE_PARSE(in) {
-//         auto ret = R::parse(in);
-//         if (ret) return ret;
-//         return MAKE_TOKEN(in.pos());
-//     }
-// };
-//
-// template<RuleType R>
-// [[nodiscard]] constexpr Opt<R> operator-(R) {
-//     return {};
-// }
-//
-// /// PEG zero-or-more `e*`.
-// template<RuleType R>
-// struct Star: detail::CombTag {
-//     DEFINE_PARSE(in) {
-//         auto pos = in.pos();
-//
-//         Token::Children children{};
-//         while (auto ret = R::parse(in)) {
-//             if constexpr (detail::CombRule<R>) {
-//                 detail::concat(children, ret->children);
-//             } else {
-//                 children.push_back(std::move(*ret));
-//             }
-//         }
-//
-//         return MAKE_TOKEN(std::move(children), {pos, in.current()});
-//     }
-// };
-//
-// template<RuleType R>
-// [[nodiscard]] constexpr Star<R> operator*(R) {
-//     return {};
-// }
-//
-// /// PEG one-or-more `e+`.
-// template<RuleType R>
-// struct Plus: detail::CombTag {
-//     DEFINE_PARSE(in) {
-//         auto pos = in.pos();
-//
-//         Token::Children children{};
-//         while (auto ret = R::parse(in)) {
-//             if constexpr (detail::CombRule<R>) {
-//                 detail::concat(children, ret->children);
-//             } else {
-//                 children.push_back(std::move(*ret));
-//             }
-//         }
-//
-//         return children.empty() ? nullptr : MAKE_TOKEN(std::move(children), {pos, in.current()});
-//     }
-// };
-//
-// template<RuleType R>
-// [[nodiscard]] constexpr Plus<R> operator+(R) {
-//     return {};
-// }
-//
-// /// PEG sequence `e1 e2`.
-// template<RuleType R, RuleType... Rs>
-// struct Seq: detail::CombTag {
-//     DEFINE_PARSE(in) {
-//         auto pos = in.pos();
-//         auto ret = R::parse(in);
-//         if (!ret) return nullptr;
-//
-//         Token::Children children{};
-//         children.push_back(std::move(*ret));
-//         if ((_helper<Rs>(in, children) && ...))
-//             return MAKE_TOKEN(std::move(children), {pos, in.current()});
-//
-//         in.jump(pos);
-//         return nullptr;
-//     }
-//
-//   private:
-//     template<RuleType R_, InputType Input>
-//     static bool _helper(Input& in, Token::Children& children) noexcept {
-//         auto ret = R_::parse(in);
-//         if (!ret) return false;
-//         if constexpr (detail::CombRule<R_>) {
-//             detail::concat(children, ret->children);
-//         } else {
-//             children.push_back(std::move(*ret));
-//         }
-//         return true;
-//     }
-// };
-//
-// template<RuleType R1, RuleType R2>
-// [[nodiscard]] constexpr Seq<R1, R2> operator&(R1, R2) {
-//     return {};
-// }
-//
-// template<RuleType R1, RuleType... R2s>
-// [[nodiscard]] constexpr Seq<R1, R2s...> operator&(R1, Seq<R2s...>) {
-//     return {};
-// }
-//
-// template<RuleType... R1s, RuleType R2>
-// [[nodiscard]] constexpr Seq<R1s..., R2> operator&(Seq<R1s...>, R2) {
-//     return {};
-// }
-//
-// template<RuleType... R1s, RuleType... R2s>
-// [[nodiscard]] constexpr Seq<R1s..., R2s...> operator&(Seq<R1s...>, Seq<R2s...>) {
-//     return {};
-// }
-//
-// /// PEG ordered choice `e1 | e2`.
-// template<RuleType R, RuleType... Rs>
-// struct Sor: detail::CombTag {
-//     DEFINE_PARSE(in) {
-//         auto ret = _helper<R>(in);
-//         ret || ((ret = _helper<Rs>(in)) || ...);
-//         return ret;
-//     }
-//
-//   private:
-//     template<RuleType R_, InputType Input>
-//     static ParseRet _helper(Input& in) {
-//         auto ret = R_::parse(in);
-//         if constexpr (detail::CombRule<R_>) {
-//             return ret;
-//         } else {
-//             return ret ? detail::wrap(std::move(ret)) : nullptr;
-//         }
-//     }
-// };
-//
-// template<RuleType R1, RuleType R2>
-// [[nodiscard]] constexpr Sor<R1, R2> operator|(R1, R2) {
-//     return {};
-// }
-//
-// template<RuleType R1, RuleType... R2s>
-// [[nodiscard]] constexpr Sor<R1, R2s...> operator|(R1, Sor<R2s...>) {
-//     return {};
-// }
-//
-// template<RuleType... R1s, RuleType R2>
-// [[nodiscard]] constexpr Sor<R1s..., R2> operator|(Sor<R1s...>, R2) {
-//     return {};
-// }
-//
-// template<RuleType... R1s, RuleType... R2s>
-// [[nodiscard]] constexpr Sor<R1s..., R2s...> operator|(Sor<R1s...>, Sor<R2s...>) {
-//     return {};
-// }
+/// PEG and-predicate `&e`.
+template<RuleType R>
+struct At {
+    DEFINE_PARSE(in, out) {
+        auto pos = in.pos();
+        auto ret = R::parse(in, out);
+        in.jump(pos);
+        return ret;
+    }
+};
+
+template<RuleType R>
+[[nodiscard]] constexpr At<R> operator&(R) {
+    return {};
+}
+
+/// PEG not-predicate `!e`.
+template<RuleType R>
+struct NotAt {
+    DEFINE_PARSE(in, out) {
+        auto pos = in.pos();
+        auto ret = R::parse(in, out);
+        in.jump(pos);
+        return !ret;
+    }
+};
+
+template<RuleType R>
+[[nodiscard]] constexpr NotAt<R> operator!(R) {
+    return {};
+}
+
+/// PEG optional `e?`.
+template<RuleType R>
+struct Opt {
+    DEFINE_PARSE(in, out) {
+        R::parse(in, out);
+        return true;
+    }
+};
+
+template<RuleType R>
+[[nodiscard]] constexpr Opt<R> operator-(R) {
+    return {};
+}
+
+/// PEG zero-or-more `e*`.
+template<RuleType R>
+struct Star {
+    DEFINE_PARSE(in, out) {
+        while (R::parse(in, out)) {}
+        return true;
+    }
+};
+
+template<RuleType R>
+[[nodiscard]] constexpr Star<R> operator*(R) {
+    return {};
+}
+
+/// PEG one-or-more `e+`.
+template<RuleType R>
+struct Plus {
+    DEFINE_PARSE(in, out) {
+        if (!R::parse(in, out)) return false;
+        while (R::parse(in, out)) {}
+        return true;
+    }
+};
+
+template<RuleType R>
+[[nodiscard]] constexpr Plus<R> operator+(R) {
+    return {};
+}
+
+/// PEG sequence `e1 e2`.
+template<RuleType... Rs>
+struct Seq {
+    DEFINE_PARSE(in, out) {
+        auto pos = in.pos();
+        size_t size = out.size();
+        if ((Rs::parse(in, out) && ...)) return true;
+        in.jump(pos);
+        out.erase(out.begin() + size, out.end());
+        return false;
+    }
+};
+
+template<RuleType R1, RuleType R2>
+[[nodiscard]] constexpr Seq<R1, R2> operator&(R1, R2) {
+    return {};
+}
+
+template<RuleType R1, RuleType... R2s>
+[[nodiscard]] constexpr Seq<R1, R2s...> operator&(R1, Seq<R2s...>) {
+    return {};
+}
+
+template<RuleType... R1s, RuleType R2>
+[[nodiscard]] constexpr Seq<R1s..., R2> operator&(Seq<R1s...>, R2) {
+    return {};
+}
+
+template<RuleType... R1s, RuleType... R2s>
+[[nodiscard]] constexpr Seq<R1s..., R2s...> operator&(Seq<R1s...>, Seq<R2s...>) {
+    return {};
+}
+
+/// PEG ordered choice `e1 | e2`.
+template<RuleType... Rs>
+struct Sor {
+    DEFINE_PARSE(in, out) {
+        if ((Rs::parse(in, out) || ...)) return true;
+        return false;
+    }
+};
+
+template<RuleType R1, RuleType R2>
+[[nodiscard]] constexpr Sor<R1, R2> operator|(R1, R2) {
+    return {};
+}
+
+template<RuleType R1, RuleType... R2s>
+[[nodiscard]] constexpr Sor<R1, R2s...> operator|(R1, Sor<R2s...>) {
+    return {};
+}
+
+template<RuleType... R1s, RuleType R2>
+[[nodiscard]] constexpr Sor<R1s..., R2> operator|(Sor<R1s...>, R2) {
+    return {};
+}
+
+template<RuleType... R1s, RuleType... R2s>
+[[nodiscard]] constexpr Sor<R1s..., R2s...> operator|(Sor<R1s...>, Sor<R2s...>) {
+    return {};
+}
 
 #undef DEFINE_PARSE
 #undef MAKE_TOKEN
