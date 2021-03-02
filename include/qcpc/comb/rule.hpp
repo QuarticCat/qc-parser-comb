@@ -188,6 +188,16 @@ struct AlNum {
 
 inline constexpr AlNum alnum{};
 
+/// Match and consume blank characters. Equivalent to `[ \t\r\n]+`.
+struct Blank {
+    DEFINE_PARSE(in) {
+        return detail::light_plus(
+            in, [](char c) { return c == ' ' || c == '\t' || c == '\r' || c == '\n'; });
+    }
+};
+
+inline constexpr Blank blank{};
+
 // =================
 // || Combinators ||
 // =================

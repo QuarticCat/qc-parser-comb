@@ -136,6 +136,22 @@ TEST(SimpleRule, AlNum) {
     ASSERT_EQ(in3.current(), in3.begin());
 }
 
+QCPC_DECL_DEF(blank_rule) = blank;
+
+TEST(SimpleRule, Blank) {
+    StringInput in1(" \t\r\n");
+    ASSERT_TRUE(parse(blank_rule, in1));
+    ASSERT_EQ(in1.current(), in1.end());
+
+    StringInput in2("---");
+    ASSERT_FALSE(parse(blank_rule, in2));
+    ASSERT_EQ(in2.current(), in2.begin());
+
+    StringInput in3("");
+    ASSERT_FALSE(parse(blank_rule, in3));
+    ASSERT_EQ(in3.current(), in3.begin());
+}
+
 QCPC_DECL_DEF(at_rule) = &str_rule;
 
 TEST(SimpleRule, At) {

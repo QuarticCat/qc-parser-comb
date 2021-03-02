@@ -49,6 +49,10 @@ struct `AlNum` / variable `alnum`
 - Match and consume alphabetic letters and numbers.
 - Equivalent to `[a-zA-Z0-9]+`.
 
+struct `Blank` / variable `blank`
+- Match and consume blank characters.
+- Equivalent to `[ \t\r\n]+`.
+
 ## Combinators
 
 struct `At<RuleType>` / operator `&` (unary)
