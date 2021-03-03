@@ -26,7 +26,7 @@ to help you doing this. A grammar rule definition is comprised of two parts:
 You can combine them together by using the macro `QCPC_DECL_DEF(name)`. You
 can not omit declarations.
 
-Here is an example, the grammar of a simple calculator:
+Here is the grammar of a simple calculator:
 
 ```cpp
 #include "qcpc/qcpc.hpp"
@@ -35,34 +35,35 @@ using namespace qcpc;
 
 QCPC_DECL(expr);
 
+QCPC_DECL_DEF_(sep)
+  = *one<' ', '\t', '\r', '\n'>
+  ;
 QCPC_DECL_DEF(value)
-  = num
-  | (one<'('> & expr & one<')'>)
+  = +range<'0', '9'>
+  | join(sep, one<'('>, expr, one<')'>)
+  ;
+QCPC_DECL_DEF(product_op)
+  = one<'*'> | one<'/'>
   ;
 QCPC_DECL_DEF(product)
-  = value & *((one<'*'> | one<'/'>) & value)
+  = list(value, product_op, sep)
+  ;
+QCPC_DECL_DEF(sum_op)
+  = one<'+'> | one<'-'>
   ;
 QCPC_DECL_DEF(sum)
-  = product & *((one<'+'> | one<'-'>) & product)
+  = list(product, sum_op, sep)
   ;
 QCPC_DEF(expr)
   = sum
+  ;
+QCPC_DECL_DEF(grammar)
+  = boi & expr & eoi
   ;
 ```
 
 `QCPC_DECL(name)` will create an `inline constexpr` variable with anonymous
 type, you can then use it in expressions and assign them to a `QCPC_DEF(name)`.
-
-If you just want to create an alias, instead of a rule, you can simply assign
-the expression to a `constexpr` variable:
-
-```cpp
-inline constexpr auto wrapped_expr = one<'('> & expr & one<')'>;
-QCPC_DECL_DEF(value) = num | wrapped_expr;
-```
-
-Take it easy, all variables are empty and only for carrying type information,
-assigning them to multiple rules or whatever will not bring any side-effects.
 
 ## Parsing
 
@@ -73,53 +74,43 @@ you must construct an input object:
 StringInput in("(1+2)/3*5*6-2");
 ```
 
-This library provide a sole entry `parse(rule, input)`. Now start parsing!
+Now you can start parsing:
 
 ```cpp
 auto ret = parse(expr, in);
 ```
 
-The return type is `std::unique_ptr<qcpc::Token>`, `nullptr` means grammar
-matches failed, `Token` is a tree-like object that stores the matching result.
+The return type is `std::optional<qcpc::Token>`, `std::nullopt` means grammar
+matches failed. `Token` is a tree-like object that stores the matching result.
 
 ## Processing
 
-If match succeeds, you now have a `Token` object. Every atomic rules and user
-defined rules will produce a `Token` object, while combinators does not. For
-example, this grammar
+If match succeeds, you now have a `Token` object. Every user defined rules will
+produce a `Token` object. If you do not expect that, you can use the silent
+version `QCPC_DECL_` and `QCPC_DECL_DEF_`. There is no `QCPC_DEF_`.
+
+Example:
 
 ```cpp
-QCPC_DECL_DEF(foo) = one<'1'> & *(one<'2'> & one<'3'>);
+QCPC_DECL_DEF(two) = one<'2'>;
+QCPC_DECL_DEF(twotwo) = two & two;
+QCPC_DECL_DEF(foo) = one<'2'> & *twotwo;
 ```
 
-parsing `"12323"` will produce
+Use `foo` to parse `"22222"` will produce:
 
 ```text
 - foo
-  - one<'1'>
-  - one<'2'>
-  - one<'3'>
-  - one<'2'>
-  - one<'3'>
+  - twotwo
+    - two
+    - two
+  - twotwo
+    - two
+    - two
 ```
 
-instead of
-
-```text
-- foo
-  - seq
-    - one<'1'>
-    - star
-      - seq
-        - one<'2'>
-        - one<'3'>
-      - seq
-        - one<'2'>
-        - one<'3'>
-```
-
-Every `Token` produced by user defined rule will have a tag. You can use tags
-to distinguish different rules:
+Every `Token` will have a tag. You can use tags to distinguish different
+rules:
 
 ```cpp
 switch (token.tag()) {
