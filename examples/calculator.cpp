@@ -9,7 +9,7 @@ using namespace qcpc;
 // clang-format off
 
 QCPC_DECL_DEF_(blank)
-  = *any<' ', '\t', '\r', '\n'>
+  = *one<' ', '\t', '\r', '\n'>
   ;
 QCPC_SET_SEP(blank);
 

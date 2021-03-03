@@ -20,8 +20,9 @@ struct `Eol` / variable `eol`
 
 ## ASCII Rules
 
-struct `One<char>` / variable `one<char>`
-- Match and consume a given character.
+struct `One<char...>` / variable `one<char...>`
+- Match and consume any given character once.
+- `one<'a', 'b', 'c'>` means `[abc]` in PEG.
 
 struct `Str<char...>` / variable `str<char...>`
 - Match and consume given string.
@@ -30,10 +31,6 @@ struct `Str<char...>` / variable `str<char...>`
 struct `Range<char...>` / variable `range<char...>`
 - Match and consume a character in given ASCII range(s).
 - `range<'a', 'z', 'A', 'Z'>` means `[a-zA-Z]` in PEG.
-
-struct `Any<char...>` / variable `any<char...>`
-- Match and consume any given character once.
-- `any<'a', 'b', 'c'>` means `[abc]` in PEG.
 
 ## Combinators
 

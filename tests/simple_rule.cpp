@@ -52,14 +52,14 @@ TEST(SimpleRule, Eol) {
     ASSERT_EQ(in3.current(), in3.begin());
 }
 
-QCPC_DECL_DEF(one_rule) = one<'x'>;
+QCPC_DECL_DEF(one_rule) = one<'a', 'b', 'c'>;
 
 TEST(SimpleRule, One) {
-    StringInput in1("x");
+    StringInput in1("c");
     ASSERT_TRUE(parse(one_rule, in1));
     ASSERT_EQ(in1.current(), in1.end());
 
-    StringInput in2("y");
+    StringInput in2("-");
     ASSERT_FALSE(parse(one_rule, in2));
     ASSERT_EQ(in2.current(), in2.begin());
 }
@@ -80,18 +80,6 @@ QCPC_DECL_DEF(range_rule) = range<'a', 'z', 'A', 'Z'>;
 
 TEST(SimpleRule, Range) {
     StringInput in1("a");
-    ASSERT_TRUE(parse(range_rule, in1));
-    ASSERT_EQ(in1.current(), in1.end());
-
-    StringInput in2("-");
-    ASSERT_FALSE(parse(range_rule, in2));
-    ASSERT_EQ(in2.current(), in2.begin());
-}
-
-QCPC_DECL_DEF(any_rule) = any<'a', 'b', 'c'>;
-
-TEST(SimpleRule, Any) {
-    StringInput in1("c");
     ASSERT_TRUE(parse(range_rule, in1));
     ASSERT_EQ(in1.current(), in1.end());
 

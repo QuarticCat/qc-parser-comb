@@ -75,21 +75,21 @@ struct Eol {
 
 inline constexpr Eol eol{};
 
-/// Match and consume a given character.
-template<char C>
+/// Match and consume any given character once.
+/// `one<'a', 'b', 'c'>` means `[abc]` in PEG.
+template<char... Cs>
 struct One {
     DEFINE_PARSE(in, ) {
-        if (*in == C) {
+        if (((*in == Cs) || ...)) {
             ++in;
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 };
 
-template<char C>
-inline constexpr One<C> one{};
+template<char... Cs>
+inline constexpr One<Cs...> one{};
 
 /// Match and consume given string.
 /// `str<'a', 'b', 'c', 'd'>` means `"abcd"` in PEG.
@@ -134,22 +134,6 @@ struct Range {
 
 template<char... Cs>
 inline constexpr Range<Cs...> range{};
-
-/// Match and consume any given character once.
-/// `any<'a', 'b', 'c'>` means `[abc]` in PEG.
-template<char... Cs>
-struct Any {
-    DEFINE_PARSE(in, ) {
-        if (((*in == Cs) || ...)) {
-            ++in;
-            return true;
-        }
-        return false;
-    }
-};
-
-template<char... Cs>
-inline constexpr Any<Cs...> any{};
 
 /// PEG and-predicate `&e`.
 template<RuleType R>
