@@ -18,13 +18,13 @@ QCPC_DECL_DEF(value)
   | join(sep, one<'('>, expr, one<')'>)
   ;
 QCPC_DECL_DEF(product_op)
-  = one<'*'> | one<'/'>
+  = one<'*', '/'>
   ;
 QCPC_DECL_DEF(product)
   = list(value, product_op, sep)
   ;
 QCPC_DECL_DEF(sum_op)
-  = one<'+'> | one<'-'>
+  = one<'+', '-'>
   ;
 QCPC_DECL_DEF(sum)
   = list(product, sum_op, sep)
