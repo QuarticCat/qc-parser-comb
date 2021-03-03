@@ -83,25 +83,6 @@ inline constexpr int rule_set = 0;
     QCPC_DECL_(name);        \
     QCPC_DEF(name)
 
-/// Set a declared rule as separator. After that, you can replace `&` with `&&` to insert this rule.
-/// It is recommended that this rule is totally silent, i.e. it and all its sub-rules are silent.
-// clang-format off
-#define QCPC_SET_SEP(name)                                              \
-    template<::qcpc::RuleType R1, ::qcpc::RuleType R2>                  \
-    [[nodiscard]] constexpr ::qcpc::Seq<R1, decltype(name), R2>         \
-    operator&&(R1, R2) { return {}; }                                   \
-    template<::qcpc::RuleType R1, ::qcpc::RuleType... R2s>              \
-    [[nodiscard]] constexpr ::qcpc::Seq<R1, decltype(name), R2s...>     \
-    operator&&(R1, ::qcpc::Seq<R2s...>) { return {}; }                  \
-    template<::qcpc::RuleType... R1s, ::qcpc::RuleType R2>              \
-    [[nodiscard]] constexpr ::qcpc::Seq<R1s..., decltype(name), R2>     \
-    operator&&(::qcpc::Seq<R1s...>, R2) { return {}; }                  \
-    template<::qcpc::RuleType... R1s, ::qcpc::RuleType... R2s>          \
-    [[nodiscard]] constexpr ::qcpc::Seq<R1s..., decltype(name), R2s...> \
-    operator&&(::qcpc::Seq<R1s...>, ::qcpc::Seq<R2s...>) { return {}; } \
-    static_assert(true)
-// clang-format on
-
 /// The sole parsing entry for users. It does not allow `Input&&` because the returned `Token`s
 /// holds views into the input object, so it must outlive the parse function.
 // clang-format off

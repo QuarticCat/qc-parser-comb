@@ -272,6 +272,24 @@ template<RuleType... R1s, RuleType... R2s>
     return {};
 }
 
+/// Equivalent to `R & *(S & R)`.
+template<RuleType R, RuleType S>
+[[nodiscard]] constexpr auto list(R r, S s) {
+    return r & *(s & r);
+}
+
+/// Equivalent to `R & *((P & S & P) & R)`.
+template<RuleType R, RuleType S, RuleType P>
+[[nodiscard]] constexpr auto list(R r, S s, P p) {
+    return r & *((p & s & p) & r);
+}
+
+/// Equivalent to `R & S & Rs[0] & S & Rs[1] & ...`.
+template<RuleType S, RuleType R, RuleType... Rs>
+[[nodiscard]] constexpr auto join(S s, R r, Rs... rs) {
+    return r & ((s & rs) & ...);
+}
+
 #undef DEFINE_PARSE
 #undef MAKE_TOKEN
 

@@ -8,32 +8,27 @@ using namespace qcpc;
 
 // clang-format off
 
-QCPC_DECL_DEF_(blank)
-  = *one<' ', '\t', '\r', '\n'>
-  ;
-QCPC_SET_SEP(blank);
-
 QCPC_DECL(expr);
 
-QCPC_DECL_DEF(value)
-  = (+range<'0', '9'>)
-  | (one<'('> && expr && one<')'>)
+QCPC_DECL_DEF_(sep)
+  = *one<' ', '\t', '\r', '\n'>
   ;
-
+QCPC_DECL_DEF(value)
+  = +range<'0', '9'>
+  | join(sep, one<'('>, expr, one<')'>)
+  ;
 QCPC_DECL_DEF(product_op)
   = one<'*'> | one<'/'>
   ;
 QCPC_DECL_DEF(product)
-  = value & *(blank & product_op && value)
+  = list(value, product_op, sep)
   ;
-
 QCPC_DECL_DEF(sum_op)
   = one<'+'> | one<'-'>
   ;
 QCPC_DECL_DEF(sum)
-  = product & *(blank & sum_op && product)
+  = list(product, sum_op, sep)
   ;
-
 QCPC_DEF(expr)
   = sum
   ;
@@ -96,7 +91,7 @@ TEST(Calculator, Case1) {
 }
 
 TEST(Calculator, Case2) {
-    StringInput in("(1 + 2) / 3 * 5 * 6 - 2");
+    StringInput in("( 1 + 2 ) / 3 * 5 * 6 - 2");
     auto ret = parse(expr, in);
     ASSERT_TRUE(ret);
     ASSERT_EQ(eval(ret->children[0]), 28);

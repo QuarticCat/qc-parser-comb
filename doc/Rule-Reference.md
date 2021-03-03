@@ -3,55 +3,66 @@
 - [Zero-Width Rules](#zero-width-rules)
 - [ASCII Rules](#ascii-rules)
 - [Combinators](#combinators)
+- [Convenient Functions](#convenient-functions)
 
 ## Zero-Width Rules
 
-struct `Boi` / variable `boi`
+`boi`
 - Match the beginning of input. Consume nothing.
 
-struct `Eoi` / variable `eoi`
+`eoi`
 - Match the end of input. Consume nothing.
 
-struct `Bol` / variable `bol`
+`bol`
 - Match the beginning of lines. Consume nothing.
 
-struct `Eol` / variable `eol`
+`eol`
 - Match the end of lines. Consume "\r\n" or "\n".
 
 ## ASCII Rules
 
-struct `One<char...>` / variable `one<char...>`
+`one<char...>`
 - Match and consume any given character once.
 - `one<'a', 'b', 'c'>` means `[abc]` in PEG.
 
-struct `Str<char...>` / variable `str<char...>`
+`str<char...>`
 - Match and consume given string.
-- `str<'a', 'b', 'c', 'd'>` means `"abcd"` in PEG.
+`"abcd"` in PEG.
 
 struct `Range<char...>` / variable `range<char...>`
 - Match and consume a character in given ASCII range(s).
-- `range<'a', 'z', 'A', 'Z'>` means `[a-zA-Z]` in PEG.
+`[a-zA-Z]` in PEG.
 
 ## Combinators
 
-struct `At<RuleType>` / operator `&` (unary)
+`operator&` (unary)
 - PEG and-predicate ***&e***.
 
-struct `NotAt<RuleType>` / operator `!`
+`operator!`
 - PEG not-predicate ***!e***.
 
-struct `Opt<RuleType>` / operator `-` (unary)
+`operator-` (unary)
 - PEG optional ***e?***.
 
-struct `Star<RuleType>` / operator `*` (unary)
+`operator*` (unary)
 - PEG zero-or-more ___e*___.
 
-struct `Plus<RuleType>` / operator `+` (unary)
+`operator+` (unary)
 - PEG one-or-more ***e+***.
 
-struct `Seq<RuleType...>` / operator `&` (binary)
+`operator&` (binary)
 - PEG sequence ***e1 e2***.
 
-struct `Sor<RuleType...>` / operator `|`
+`operator|`
 - PEG ordered choice ***e1 | e2***.
 
+## Convenient Functions
+
+`list(R, S)`
+- Equivalent to `R & *(S & R)`.
+
+`list(R, S, P)`
+- Equivalent to `R & *((P & S & P) & R)`.
+
+`join(S, R, Rs...)`
+- Equivalent to `R & S & Rs[0] & S & Rs[1] & ...`.

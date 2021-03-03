@@ -28,14 +28,3 @@ TEST(CompoundRule, Unwind) {
     ASSERT_TRUE(ret);
     ASSERT_EQ(ret->children.size(), 1);
 }
-
-QCPC_DECL_DEF_(silent_one) = one<'1'>;
-QCPC_SET_SEP(silent_one);
-QCPC_DECL_DEF(separate) = two & two && two && two & two;
-
-TEST(CompoundRule, Separate) {
-    StringInput in("2212122");
-    auto ret = parse(separate, in);
-    ASSERT_TRUE(ret);
-    ASSERT_EQ(ret->children.size(), 5);
-}
