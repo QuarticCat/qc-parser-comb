@@ -5,6 +5,10 @@
 
 using namespace qcpc;
 
+#define COMPARE_RULE(rule1, rule2)                             \
+    (std::same_as<decltype(detail::rule_set<decltype(rule1)>), \
+                  decltype(detail::rule_set<decltype(rule2)>)>)
+
 QCPC_DECL_DEF(boi_rule) = boi;
 
 TEST(SimpleRule, Boi) {
@@ -65,8 +69,11 @@ TEST(SimpleRule, One) {
 }
 
 QCPC_DECL_DEF(str_rule) = str<'q', 'c', 'p', 'c'>;
+QCPC_DECL_DEF(macro_str_rule) = QCPC_STR("qcpc");
 
 TEST(SimpleRule, Str) {
+    ASSERT_TRUE(COMPARE_RULE(str_rule, macro_str_rule));
+
     StringInput in1("qcpc");
     ASSERT_TRUE(parse(str_rule, in1));
     ASSERT_EQ(in1.current(), in1.end());
@@ -149,10 +156,6 @@ TEST(SimpleRule, Plus) {
     ASSERT_FALSE(parse(plus_rule, in2));
     ASSERT_EQ(in2.current(), in2.begin());
 }
-
-#define COMPARE_RULE(rule1, rule2)                             \
-    (std::same_as<decltype(detail::rule_set<decltype(rule1)>), \
-                  decltype(detail::rule_set<decltype(rule2)>)>)
 
 QCPC_DECL_DEF(seq_rule1) = str_rule & str_rule & str_rule & str_rule;
 QCPC_DECL_DEF(seq_rule2) = (str_rule & str_rule) & str_rule & str_rule;

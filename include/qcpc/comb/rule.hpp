@@ -113,6 +113,23 @@ struct Str {
 template<char C, char... Cs>
 inline constexpr Str<C, Cs...> str{};
 
+namespace detail {
+
+template<class T, size_t... Is>
+[[nodiscard]] constexpr auto str_helper(std::index_sequence<Is...>) {
+    return Str<T{}.chars[Is]...>{};
+}
+
+}  // namespace detail
+
+/// `QCPC_STR("abcd")` means `"abcd"` in PEG.
+#define QCPC_STR(str)                              \
+    []<size_t... Is>(std::index_sequence<Is...>) { \
+        constexpr const char cs[] = str;           \
+        return ::qcpc::Str<cs[Is]...>{};           \
+    }                                              \
+    (std::make_index_sequence<sizeof(str) - 1>{})
+
 /// Match and consume a character in given ASCII range(s).
 /// `range<'a', 'z', 'A', 'Z'>` means `[a-zA-Z]` in PEG.
 template<char... Cs>

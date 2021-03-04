@@ -25,9 +25,10 @@
 - Match and consume any given character once.
 - `one<'a', 'b', 'c'>` means `[abc]` in PEG.
 
-`str<char...>`
+`str<char...>` / `QCPC_STR(str)`
 - Match and consume given string.
-`"abcd"` in PEG.
+- `str<'a', 'b', 'c', 'd'>` means `"abcd"` in PEG.
+- `QCPC_STR("abcd")` means `"abcd"` in PEG.
 
 struct `Range<char...>` / variable `range<char...>`
 - Match and consume a character in given ASCII range(s).
