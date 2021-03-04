@@ -29,6 +29,10 @@ struct InputCRTP {
         return *this->_current;
     }
 
+    [[nodiscard]] char operator[](size_t n) const noexcept {
+        return this->_current[n];
+    }
+
     [[nodiscard]] bool is_boi() const noexcept {
         return this->_current == this->_begin;
     }
@@ -75,6 +79,11 @@ struct InputCRTP {
         this->_current = pos.current;
         this->_line = pos.line;
         this->_column = pos.column;
+    }
+
+    /// Execute self-increment `n` times.
+    void advance(size_t n) noexcept {
+        for (size_t i = 0; i < n; ++i) this->_next();
     }
 
   protected:

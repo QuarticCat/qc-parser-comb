@@ -93,34 +93,28 @@ inline constexpr One<Cs...> one{};
 
 /// Match and consume given string.
 /// `str<'a', 'b', 'c', 'd'>` means `"abcd"` in PEG.
-template<char C, char... Cs>
+template<char... Cs>
 struct Str {
     // Waiting for complete support of "Class Types in Non-Type Template Parameters" feature.
     // With this feature, we can pass a string literal as a template parameter.
 
     DEFINE_PARSE(in, ) {
         if (in.size() < sizeof...(Cs)) return false;
-        auto pos = in.pos();
-        if (C == *in && ((Cs == *++in) && ...)) {
-            ++in;
+        auto current = in.current();
+        if (((Cs == *current++) && ...)) {
+            in.advance(sizeof...(Cs));
             return true;
         }
-        in.jump(pos);
         return false;
     }
 };
 
-template<char C, char... Cs>
-inline constexpr Str<C, Cs...> str{};
+// Optimization
+template<char C>
+struct Str<C>: One<C> {};
 
-namespace detail {
-
-template<class T, size_t... Is>
-[[nodiscard]] constexpr auto str_helper(std::index_sequence<Is...>) {
-    return Str<T{}.chars[Is]...>{};
-}
-
-}  // namespace detail
+template<char... Cs>
+inline constexpr Str<Cs...> str{};
 
 /// `QCPC_STR("abcd")` means `"abcd"` in PEG.
 #define QCPC_STR(str)                              \
