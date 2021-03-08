@@ -28,10 +28,11 @@ inline constexpr int rule_set = 0;
 
 #define QCPC_DETAIL_DECL(name, silent)                                                  \
     struct QCPC_DETAIL_MANGLE(name): ::qcpc::detail::GeneratedTag {                     \
+        static constexpr bool is_silent = silent;                                       \
         /* Using `__COUNTER__` here may violate ODR. */                                 \
         static constexpr ::qcpc::RuleTag tag =                                          \
-            ::qcpc::detail::get_tag<const QCPC_DETAIL_MANGLE(name)>();                  \
-        static constexpr bool is_silent = silent;                                       \
+            is_silent ? ::qcpc::NO_RULE                                                 \
+                      : ::qcpc::detail::get_tag<const QCPC_DETAIL_MANGLE(name)>();      \
                                                                                         \
         /* The use of the inline variable here is IFNDR. */                             \
         template<::qcpc::InputType Input, class Lazy = const QCPC_DETAIL_MANGLE(name)>  \

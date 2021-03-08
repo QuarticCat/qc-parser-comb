@@ -93,6 +93,7 @@ inline constexpr One<Cs...> one{};
 
 /// Match and consume given string.
 /// `str<'a', 'b', 'c', 'd'>` means `"abcd"` in PEG.
+/// `QCPC_STR("abcd")` means `"abcd"` in PEG.
 template<char... Cs>
 struct Str {
     // Waiting for complete support of "Class Types in Non-Type Template Parameters" feature.
@@ -116,11 +117,9 @@ struct Str<C>: One<C> {};
 template<char... Cs>
 inline constexpr Str<Cs...> str{};
 
-/// `QCPC_STR("abcd")` means `"abcd"` in PEG.
 #define QCPC_STR(str)                              \
     []<size_t... Is>(std::index_sequence<Is...>) { \
-        constexpr const char cs[] = str;           \
-        return ::qcpc::Str<cs[Is]...>{};           \
+        return ::qcpc::Str<str[Is]...>{};          \
     }                                              \
     (std::make_index_sequence<sizeof(str) - 1>{})
 
