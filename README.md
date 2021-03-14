@@ -5,9 +5,40 @@
 
 A header-only parser combinator library for fun. Aiming to be simple and elegant.
 
+```cpp
+QCPC_DECL(expr);
+
+QCPC_DECL_DEF_(sep)
+  = *one<' ', '\t', '\r', '\n'>
+  ;
+QCPC_DECL_DEF(value)
+  = +range<'0', '9'>
+  | join(sep, one<'('>, expr, one<')'>)
+  ;
+QCPC_DECL_DEF(product_op)
+  = one<'*', '/'>
+  ;
+QCPC_DECL_DEF(product)
+  = list(value, product_op, sep)
+  ;
+QCPC_DECL_DEF(sum_op)
+  = one<'+', '-'>
+  ;
+QCPC_DECL_DEF(sum)
+  = list(product, sum_op, sep)
+  ;
+QCPC_DEF(expr)
+  = sum
+  ;
+QCPC_DECL_DEF(grammar)
+  = boi & expr & eoi
+  ;
+```
+
 ## Examples
 
-See [examples](/examples) folder.
+- [examples](/examples) folder
+- [micro-lang](https://github.com/QuarticCat/micro-lang)
 
 ## Documentation
 
