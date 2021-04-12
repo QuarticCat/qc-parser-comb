@@ -84,6 +84,7 @@ TEST(SimpleRule, Str) {
 }
 
 QCPC_DECL_DEF(range_rule) = range<'a', 'z', 'A', 'Z'>;
+QCPC_DECL_DEF(range_rule2) = range<'a', 'z', 'A', 'Z', '_'>;
 
 TEST(SimpleRule, Range) {
     StringInput in1("a");
@@ -93,6 +94,14 @@ TEST(SimpleRule, Range) {
     StringInput in2("-");
     ASSERT_FALSE(parse(range_rule, in2));
     ASSERT_EQ(in2.current(), in2.begin());
+
+    StringInput in3("_");
+    ASSERT_TRUE(parse(range_rule2, in3));
+    ASSERT_EQ(in3.current(), in3.end());
+
+    StringInput in4("-");
+    ASSERT_FALSE(parse(range_rule2, in4));
+    ASSERT_EQ(in4.current(), in4.begin());
 }
 
 QCPC_DECL_DEF(at_rule) = &str_rule;

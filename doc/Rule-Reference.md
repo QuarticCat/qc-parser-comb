@@ -30,9 +30,10 @@
 - `str<'a', 'b', 'c', 'd'>` means `"abcd"` in PEG.
 - `QCPC_STR("abcd")` means `"abcd"` in PEG.
 
-struct `Range<char...>` / variable `range<char...>`
+`range<char...>`
 - Match and consume a character in given ASCII range(s).
-`[a-zA-Z]` in PEG.
+- `range<'a', 'z', 'A', 'Z'>` means `[a-zA-Z]` in PEG.
+- `range<'a', 'z', 'A', 'Z', '_'>` means `[a-zA-Z_]` in PEG.
 
 ## Combinators
 

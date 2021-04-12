@@ -125,20 +125,29 @@ inline constexpr Str<Cs...> str{};
 
 /// Match and consume a character in given ASCII range(s).
 /// `range<'a', 'z', 'A', 'Z'>` means `[a-zA-Z]` in PEG.
+/// `range<'a', 'z', 'A', 'Z', '_'>` means `[a-zA-Z_]` in PEG.
 template<char... Cs>
 struct Range {
-    static_assert(sizeof...(Cs) % 2 == 0, "Param number should be even.");
-    // TODO: Should we check the validity of ranges?
-
     DEFINE_PARSE(in, ) {
-        constexpr char cs[] = {Cs...};  // by tests, compiler will inline this
-        for (size_t i = 0; i < sizeof...(Cs); i += 2) {
-            if (cs[i] <= *in && *in <= cs[i + 1]) {
-                ++in;
-                return true;
-            }
+        bool res = []<size_t... Is>(std::index_sequence<Is...>, char c) {
+            constexpr char cs[] = {Cs...};
+            constexpr size_t len = sizeof...(Cs);
+            if constexpr (len % 2 == 0)
+                return (check_range<cs[2 * Is], cs[2 * Is + 1]>(c) || ...);
+            else
+                return (check_range<cs[2 * Is], cs[2 * Is + 1]>(c) || ...) || c == cs[len - 1];
         }
-        return false;
+        (std::make_index_sequence<sizeof...(Cs) / 2>{}, *in);
+
+        if (res) ++in;
+        return res;
+    }
+
+  private:
+    template<char L, char R>
+    [[nodiscard]] constexpr static bool check_range(char c) noexcept {
+        static_assert(L <= R, "invalid range");
+        return L <= c && c <= R;
     }
 };
 
