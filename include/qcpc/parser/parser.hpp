@@ -6,8 +6,8 @@
 #include <type_traits>
 #include <vector>
 
-#include "rule.hpp"
 #include "rule_tag.hpp"
+#include "rules/rules.hpp"
 #include "token.hpp"
 
 namespace qcpc {
@@ -32,7 +32,7 @@ inline constexpr int rule_set = 0;
         /* Using `__COUNTER__` here may violate ODR. */                                 \
         static constexpr ::qcpc::RuleTag tag =                                          \
             is_silent ? ::qcpc::NO_RULE                                                 \
-                      : ::qcpc::detail::get_tag<const QCPC_DETAIL_MANGLE(name)>();      \
+                      : ::qcpc::detail::get_rule_tag<const QCPC_DETAIL_MANGLE(name)>(); \
                                                                                         \
         /* The use of the inline variable here is IFNDR. */                             \
         template<::qcpc::InputType Input, class Lazy = const QCPC_DETAIL_MANGLE(name)>  \

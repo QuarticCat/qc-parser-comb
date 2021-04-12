@@ -11,9 +11,9 @@ inline constexpr RuleTag NO_RULE = std::numeric_limits<RuleTag>::max();
 namespace detail {
 
 template<typename T>  // Can not remove `T` here
-constexpr RuleTag get_tag() {
+consteval RuleTag get_rule_tag() {
     // Get a string that contains type name of T from a special variable / macro
-#if defined(__clang__) || defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
     std::string_view name = __PRETTY_FUNCTION__;
 #elif defined(_MSC_VER)
     std::string_view name = __FUNCSIG__;

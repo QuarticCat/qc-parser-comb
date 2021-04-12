@@ -11,6 +11,8 @@ struct InputPos {
     size_t column;
 };
 
+// TODO: refactor this CRTP
+
 template<class Derived>
 struct InputCRTP {
     InputCRTP(const char* begin, const char* end) noexcept: _begin(begin), _end(end) {}
