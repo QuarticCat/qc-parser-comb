@@ -117,11 +117,11 @@ struct Str<C>: One<C> {};
 template<char... Cs>
 inline constexpr Str<Cs...> str{};
 
-#define QCPC_STR(str)                              \
+#define QCPC_STR(s)                                \
     []<size_t... Is>(std::index_sequence<Is...>) { \
-        return ::qcpc::Str<str[Is]...>{};          \
+        return ::qcpc::str<(s)[Is]...>;            \
     }                                              \
-    (std::make_index_sequence<sizeof(str) - 1>{})
+    (std::make_index_sequence<sizeof(s) - 1>{})
 
 /// Match and consume a character in given ASCII range(s).
 /// `range<'a', 'z', 'A', 'Z'>` means `[a-zA-Z]` in PEG.
@@ -308,6 +308,21 @@ template<RuleType S, RuleType R, RuleType... Rs>
 [[nodiscard]] constexpr auto join(S s, R r, Rs... rs) {
     return r & ((s & rs) & ...);
 }
+
+// TODO: docs and tests of these rules
+
+inline constexpr auto ident_first = range<'a', 'z', 'A', 'Z', '_'>;
+inline constexpr auto ident_other = range<'a', 'z', 'A', 'Z', '0', '9', '_'>;
+inline constexpr auto ident = ident_first & *ident_other;
+
+template<char... Cs>
+inline constexpr auto keyword = str<Cs...> & !ident_other;
+
+#define QCPC_KEYWORD(s)                            \
+    []<size_t... Is>(std::index_sequence<Is...>) { \
+        return ::qcpc::keyword<(s)[Is]...>;        \
+    }                                              \
+    (std::make_index_sequence<sizeof(s) - 1>{})
 
 #undef DEFINE_PARSE
 #undef MAKE_TOKEN
