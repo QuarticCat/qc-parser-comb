@@ -35,22 +35,27 @@ inline constexpr int rule_set = 0;
                                                                                                  \
         /* The use of the inline variable here is IFNDR. */                                      \
         template<::qcpc::InputType Input, class Lazy = Self>                                     \
-        friend bool parse_detail(Input& in, ::qcpc::Token::Children& out, Self) {                \
+        friend bool parse_detail(Input& in,                                                      \
+                                 ::qcpc::Token::Children& out,                                   \
+                                 ::qcpc::detail::MemMap mem,                                     \
+                                 Self) {                                                         \
             const auto rule = ::qcpc::detail::rule_set<Lazy>;                                    \
             if constexpr (is_silent) {                                                           \
-                return rule.parse(in, out);                                                      \
+                return rule.parse(in, out, mem);                                                 \
             } else {                                                                             \
                 ::qcpc::Token::Children children{};                                              \
                 auto pos = in.pos();                                                             \
-                bool res = rule.parse(in, children);                                             \
+                bool res = rule.parse(in, children, mem);                                        \
                 if (res) out.push_back({std::move(children), {pos, in.current()}, tag});         \
                 return res;                                                                      \
             }                                                                                    \
         }                                                                                        \
                                                                                                  \
         template<::qcpc::InputType Input>                                                        \
-        static bool parse(Input& in, ::qcpc::Token::Children& out) noexcept {                    \
-            return parse_detail(in, out, Self{});                                                \
+        static bool parse(Input& in,                                                             \
+                          ::qcpc::Token::Children& out,                                          \
+                          ::qcpc::detail::MemMap mem) noexcept {                                 \
+            return parse_detail(in, out, mem, Self{});                                           \
         }                                                                                        \
     };                                                                                           \
                                                                                                  \
@@ -82,18 +87,8 @@ inline constexpr int rule_set = 0;
 template<detail::GeneratedRule Rule, InputType Input>
 std::optional<Token> parse(Rule, Input& in) requires(!Rule::is_silent) {
     Token::Children children{};
-    if (Rule::parse(in, children))
-        return std::move(children[0]);
-    else
-        return std::nullopt;
-}
-
-/// Memoization version of `parse`.
-template<detail::GeneratedRule Rule, InputType Input>
-std::optional<Token> mem_parse(Rule, Input& in) requires(!Rule::is_silent) {
-    Token::Children children{};
     detail::MemMap mem{};
-    if (Rule::mem_parse(in, children, mem))
+    if (Rule::parse(in, children, mem))
         return std::move(children[0]);
     else
         return std::nullopt;

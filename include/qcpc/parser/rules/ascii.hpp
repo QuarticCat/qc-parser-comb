@@ -10,7 +10,7 @@ namespace qcpc {
 /// `one<'a', 'b', 'c'>` means `[abc]` in PEG.
 template<char... Cs>
 struct One {
-    QCPC_DETAIL_DEFINE_PARSE(in, ) {
+    QCPC_DETAIL_DEFINE_PARSE(One) {
         if (((*in == Cs) || ...)) {
             ++in;
             return true;
@@ -30,8 +30,7 @@ struct Str {
     // Waiting for complete support of "Class Types in Non-Type Template Parameters" feature.
     // With this feature, we can pass a string literal as a template parameter.
 
-    QCPC_DETAIL_DEFINE_MEM_PARSE(Str);
-    QCPC_DETAIL_DEFINE_PARSE(in, ) {
+    QCPC_DETAIL_DEFINE_PARSE(Str) {
         if (in.size() < sizeof...(Cs)) return false;
         auto current = in.current();
         if (((Cs == *current++) && ...)) {
@@ -60,8 +59,7 @@ inline constexpr One<C> str<C>{};
 /// `range<'a', 'z', 'A', 'Z', '_'>` means `[a-zA-Z_]` in PEG.
 template<char... Cs>
 struct Range {
-    QCPC_DETAIL_DEFINE_MEM_PARSE(Range);
-    QCPC_DETAIL_DEFINE_PARSE(in, ) {
+    QCPC_DETAIL_DEFINE_PARSE(Range) {
         bool res = []<size_t... Is>(std::index_sequence<Is...>, char c) {
             constexpr char cs[] = {Cs...};
             constexpr size_t len = sizeof...(Cs);
