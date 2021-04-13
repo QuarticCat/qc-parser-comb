@@ -26,41 +26,34 @@ inline constexpr int rule_set = 0;
 
 #define QCPC_DETAIL_MANGLE(name) QCPC_GeneratedRule_##name
 
-#define QCPC_DETAIL_DECL(name, silent)                                                  \
-    struct QCPC_DETAIL_MANGLE(name): ::qcpc::detail::GeneratedTag {                     \
-        static constexpr bool is_silent = silent;                                       \
-        /* Using `__COUNTER__` here may violate ODR. */                                 \
-        static constexpr ::qcpc::RuleTag tag =                                          \
-            is_silent ? ::qcpc::NO_RULE                                                 \
-                      : ::qcpc::detail::get_rule_tag<const QCPC_DETAIL_MANGLE(name)>(); \
-                                                                                        \
-        /* The use of the inline variable here is IFNDR. */                             \
-        template<::qcpc::InputType Input, class Lazy = const QCPC_DETAIL_MANGLE(name)>  \
-        friend bool parse_detail(Input& in,                                             \
-                                 ::qcpc::Token::Children& out,                          \
-                                 QCPC_DETAIL_MANGLE(name)) {                            \
-            const auto rule = ::qcpc::detail::rule_set<Lazy>;                           \
-            if constexpr (is_silent) {                                                  \
-                return rule.parse(in, out);                                             \
-            } else {                                                                    \
-                ::qcpc::Token::Children children{};                                     \
-                auto pos = in.pos();                                                    \
-                if (rule.parse(in, children)) {                                         \
-                    out.emplace_back(                                                   \
-                        std::move(children), ::qcpc::TokenPos(pos, in.current()), tag); \
-                    return true;                                                        \
-                } else {                                                                \
-                    return false;                                                       \
-                }                                                                       \
-            }                                                                           \
-        }                                                                               \
-                                                                                        \
-        template<::qcpc::InputType Input>                                               \
-        static bool parse(Input& in, ::qcpc::Token::Children& out) noexcept {           \
-            return parse_detail(in, out, QCPC_DETAIL_MANGLE(name){});                   \
-        }                                                                               \
-    };                                                                                  \
-                                                                                        \
+#define QCPC_DETAIL_DECL(name, silent)                                                           \
+    struct QCPC_DETAIL_MANGLE(name): ::qcpc::detail::GeneratedTag {                              \
+        using Self = QCPC_DETAIL_MANGLE(name);                                                   \
+                                                                                                 \
+        constexpr static bool is_silent = silent;                                                \
+        constexpr static auto tag = silent ? ::qcpc::NO_RULE : ::qcpc::detail::rule_tag<Self>(); \
+                                                                                                 \
+        /* The use of the inline variable here is IFNDR. */                                      \
+        template<::qcpc::InputType Input, class Lazy = Self>                                     \
+        friend bool parse_detail(Input& in, ::qcpc::Token::Children& out, Self) {                \
+            const auto rule = ::qcpc::detail::rule_set<Lazy>;                                    \
+            if constexpr (is_silent) {                                                           \
+                return rule.parse(in, out);                                                      \
+            } else {                                                                             \
+                ::qcpc::Token::Children children{};                                              \
+                auto pos = in.pos();                                                             \
+                bool res = rule.parse(in, children);                                             \
+                if (res) out.push_back({std::move(children), {pos, in.current()}, tag});         \
+                return res;                                                                      \
+            }                                                                                    \
+        }                                                                                        \
+                                                                                                 \
+        template<::qcpc::InputType Input>                                                        \
+        static bool parse(Input& in, ::qcpc::Token::Children& out) noexcept {                    \
+            return parse_detail(in, out, Self{});                                                \
+        }                                                                                        \
+    };                                                                                           \
+                                                                                                 \
     inline constexpr QCPC_DETAIL_MANGLE(name) name {}
 
 /// Declare a regular rule.
@@ -72,7 +65,7 @@ inline constexpr int rule_set = 0;
 /// Define a rule. The name must be declared by `QCPC_DECL` before.
 #define QCPC_DEF(name) \
     template<>         \
-    inline constexpr auto ::qcpc::detail::rule_set<const QCPC_DETAIL_MANGLE(name)>
+    inline constexpr auto ::qcpc::detail::rule_set<QCPC_DETAIL_MANGLE(name)>
 
 /// A convenient macro that combines `QCPC_DECL` and `QCPC_DEF`.
 #define QCPC_DECL_DEF(name) \
