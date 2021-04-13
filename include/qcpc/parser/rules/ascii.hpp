@@ -30,6 +30,7 @@ struct Str {
     // Waiting for complete support of "Class Types in Non-Type Template Parameters" feature.
     // With this feature, we can pass a string literal as a template parameter.
 
+    QCPC_DETAIL_DEFINE_MEM_PARSE(Str);
     QCPC_DETAIL_DEFINE_PARSE(in, ) {
         if (in.size() < sizeof...(Cs)) return false;
         auto current = in.current();
@@ -41,12 +42,12 @@ struct Str {
     }
 };
 
-// Optimization
-template<char C>
-struct Str<C>: One<C> {};
-
 template<char... Cs>
 inline constexpr Str<Cs...> str{};
+
+// Optimization
+template<char C>
+inline constexpr One<C> str<C>{};
 
 #define QCPC_STR(s)                                \
     []<size_t... Is>(std::index_sequence<Is...>) { \
@@ -59,6 +60,7 @@ inline constexpr Str<Cs...> str{};
 /// `range<'a', 'z', 'A', 'Z', '_'>` means `[a-zA-Z_]` in PEG.
 template<char... Cs>
 struct Range {
+    QCPC_DETAIL_DEFINE_MEM_PARSE(Range);
     QCPC_DETAIL_DEFINE_PARSE(in, ) {
         bool res = []<size_t... Is>(std::index_sequence<Is...>, char c) {
             constexpr char cs[] = {Cs...};

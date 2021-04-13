@@ -7,6 +7,7 @@ namespace qcpc {
 /// PEG and-predicate `&e`.
 template<RuleType R>
 struct At {
+    QCPC_DETAIL_DEFINE_MEM_PARSE(At);
     QCPC_DETAIL_DEFINE_PARSE(in, out) {
         auto pos = in.pos();
         auto ret = R::parse(in, out);
@@ -23,6 +24,7 @@ template<RuleType R>
 /// PEG not-predicate `!e`.
 template<RuleType R>
 struct NotAt {
+    QCPC_DETAIL_DEFINE_MEM_PARSE(NotAt);
     QCPC_DETAIL_DEFINE_PARSE(in, out) {
         auto pos = in.pos();
         auto ret = R::parse(in, out);
@@ -39,6 +41,7 @@ template<RuleType R>
 /// PEG optional `e?`.
 template<RuleType R>
 struct Opt {
+    QCPC_DETAIL_DEFINE_MEM_PARSE(Opt);
     QCPC_DETAIL_DEFINE_PARSE(in, out) {
         R::parse(in, out);
         return true;
@@ -53,6 +56,7 @@ template<RuleType R>
 /// PEG zero-or-more `e*`.
 template<RuleType R>
 struct Star {
+    QCPC_DETAIL_DEFINE_MEM_PARSE(Star);
     QCPC_DETAIL_DEFINE_PARSE(in, out) {
         while (R::parse(in, out)) {}
         return true;
@@ -67,6 +71,7 @@ template<RuleType R>
 /// PEG one-or-more `e+`.
 template<RuleType R>
 struct Plus {
+    QCPC_DETAIL_DEFINE_MEM_PARSE(Plus);
     QCPC_DETAIL_DEFINE_PARSE(in, out) {
         if (!R::parse(in, out)) return false;
         while (R::parse(in, out)) {}
@@ -82,6 +87,7 @@ template<RuleType R>
 /// PEG sequence `e1 e2`.
 template<RuleType... Rs>
 struct Seq {
+    QCPC_DETAIL_DEFINE_MEM_PARSE(Seq);
     QCPC_DETAIL_DEFINE_PARSE(in, out) {
         auto pos = in.pos();
         size_t size = out.size();
@@ -115,6 +121,7 @@ template<RuleType... R1s, RuleType... R2s>
 /// PEG ordered choice `e1 | e2`.
 template<RuleType... Rs>
 struct Sor {
+    QCPC_DETAIL_DEFINE_MEM_PARSE(Sor);
     QCPC_DETAIL_DEFINE_PARSE(in, out) {
         if ((Rs::parse(in, out) || ...)) return true;
         return false;

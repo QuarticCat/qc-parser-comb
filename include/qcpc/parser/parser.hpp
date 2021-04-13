@@ -86,15 +86,24 @@ inline constexpr int rule_set = 0;
 
 /// The sole parsing entry for users. It does not allow `Input&&` because the returned `Token`s
 /// holds views into the input object, so it must outlive the parse function.
-// clang-format off
 template<detail::GeneratedRule Rule, InputType Input>
-std::optional<Token> parse(Rule, Input& in) requires (!Rule::is_silent) {
+std::optional<Token> parse(Rule, Input& in) requires(!Rule::is_silent) {
     Token::Children children{};
     if (Rule::parse(in, children))
         return std::move(children[0]);
     else
         return std::nullopt;
 }
-// clang-format on
+
+/// Memoization version of `parse`.
+template<detail::GeneratedRule Rule, InputType Input>
+std::optional<Token> mem_parse(Rule, Input& in) requires(!Rule::is_silent) {
+    Token::Children children{};
+    detail::MemMap mem{};
+    if (Rule::mem_parse(in, children, mem))
+        return std::move(children[0]);
+    else
+        return std::nullopt;
+}
 
 }  // namespace qcpc
